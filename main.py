@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Boolean
+from sqlalchemy import Integer, String, Boolean, select
 from flask_wtf import FlaskForm
 from wtforms import SelectField
 
@@ -44,8 +44,6 @@ class Grade(db.Model):
     grade: Mapped[str] = mapped_column(String(20), nullable=False)
 
 
-
-
 with app.app_context():
     db.create_all()
 
@@ -53,91 +51,47 @@ with app.app_context():
 @app.route("/", methods=["GET", "POST"])
 def home():
     form = FilterForm()
-    form.grade.choices = [(grade.grade_id, grade.grade) for grade in Grade.query.filter_by(grade_style="Route").all()]
+    # set filter for first time load
+    if not form.climbing_style.data:
+        form.climbing_style.data = "route"
+
+    # get all grades for the selected climbing style
+    form.grade.choices = [(grade.grade_id, grade.grade) for grade in
+                          Grade.query.filter_by(grade_style=form.climbing_style.data).all()]
+
     # select all records from the database for specific user.
     all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
-    # return jsonify(sends=[send.to_dict() for send in all_sends])
+
+    # On submit, search for the selected grade and filter
+    if request.method == 'POST':
+        grade = Grade.query.filter_by(grade_id=form.grade.data).first()
+        grade_list = [grade.grade for grade in
+                          Grade.query.filter_by(grade_style=form.climbing_style.data)
+                          .where(Grade.grade_id <= grade.grade_id).all()]
+
+        # Construct a query to select from the database. Returns the rows in the database
+        result = db.session.execute(db.select(Sends).where(Sends.grade.in_(grade_list)).order_by("date"))
+
+        # Use .scalars() to get the elements rather than entire rows from the database
+        selected_sends = result.scalars().all()
+
+        return render_template('index.html', sends=selected_sends, form=form)
+        # return '<h1>Style: {}, Grade: {}</h1>'.format(form.climbing_style.data, grade.grade)
+
     return render_template("index.html", sends=all_sends, form=form)
 
-# @app.route("/random")
-# def get_random_cafe():
-#     # select single random record from the database.
-#     random_cafe = db.session.execute(db.select(Cafe).order_by(db.sql.func.random()).limit(1)).scalar()
+@app.route("/grades/<style>")
+def climbing_grades(style):
+    grades = Grade.query.filter_by(grade_style=style).all()
+    grade_list = []
 
-    #Simple return solution
+    for grade in grades:
+        gradeobj = {}
+        gradeobj['id'] = grade.grade_id
+        gradeobj['grade'] = grade.grade
+        grade_list.append(gradeobj)
+    return jsonify({"grades" : grade_list})
 
-    # return jsonify(cafe={
-    #     "id": random_cafe.id,
-    #     "name": random_cafe.name,
-    #     "map_url": random_cafe.map_url,
-    #     "img_url": random_cafe.img_url,
-    #     "location": random_cafe.location,
-    #     "seats": random_cafe.seats,
-    #     "has_toilet": random_cafe.has_toilet,
-    #     "has_wifi": random_cafe.has_wifi,
-    #     "has_sockets": random_cafe.has_sockets,
-    #     "can_take_calls": random_cafe.can_take_calls,
-    #     "coffee_price": random_cafe.coffee_price,
-    # })
-
-    #Fancy return solution
-
-    # return jsonify(cafe={
-    #     # Omit the id from the response
-    #     # "id": random_cafe.id,
-    #     "name": random_cafe.name,
-    #     "map_url": random_cafe.map_url,
-    #     "img_url": random_cafe.img_url,
-    #     "location": random_cafe.location,
-    #
-    #     # Put some properties in a sub-category
-    #     "amenities": {
-    #         "seats": random_cafe.seats,
-    #         "has_toilet": random_cafe.has_toilet,
-    #         "has_wifi": random_cafe.has_wifi,
-    #         "has_sockets": random_cafe.has_sockets,
-    #         "can_take_calls": random_cafe.can_take_calls,
-    #         "coffee_price": random_cafe.coffee_price,
-    #     }
-    # })
-
-    # convert to dictionary using a function and let flask automatically convert to json
-    # return jsonify(cafe=random_cafe.to_dict())
-
-# @app.route("/search/", methods=['GET', 'POST'])
-# def get_local_cafes():
-#     # select records from the database based on location.
-#     location = request.form['location_query']
-#     local_cafes = db.session.query(Cafe).filter_by(location=location)
-#     if local_cafes:
-#         return jsonify(cafes=[cafe.to_dict() for cafe in local_cafes])
-#     return jsonify(error={"Not Found": "Sorry, we don't have a cafe at that location."})
-
-
-# @app.route("/all")
-# def get_all_cafes():
-#     # select all records from the database.
-#     all_cafes = db.session.execute(db.select(Cafe)).scalars().all()
-#     return jsonify(cafes=[cafe.to_dict() for cafe in all_cafes])
-
-
-# @app.route("/add", methods=['GET', 'POST'])
-# def add_cafe():
-#     # add new record to db.
-#     with app.app_context():
-#         new_cafe = Cafe(name=request.form.get("name"),
-#                         map_url=request.form.get("map_url"),
-#                         img_url=request.form.get("img_url"),
-#                         location=request.form.get("loc"),
-#                         seats=request.form.get("seats"),
-#                         has_toilet=bool(request.form.get("toilet")),
-#                         has_wifi=bool(request.form.get("wifi")),
-#                         has_sockets=bool(request.form.get("sockets")),
-#                         can_take_calls=bool(request.form.get("calls")),
-#                         coffee_price=request.form.get("coffee_price"))
-#         db.session.add(new_cafe)
-#         db.session.commit()
-#     return jsonify(response={"success": "Successfully added the new cafe."})
 
 if __name__ == '__main__':
     app.run(debug=True)

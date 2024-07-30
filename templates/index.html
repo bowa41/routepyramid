@@ -14,6 +14,29 @@
     {{ form.grade }}
     <input type="submit">
     </form>
+     <script>
+        let style_select = document.getElementById('climbing_style');
+        let grade_select = document.getElementById('grade');
+
+        style_select.onchange = function() {
+            style = style_select.value;
+
+            fetch('/grades/' + style).then(function(response) {
+                response.json().then(function(data) {
+                let optionHTML = '';
+
+                for (let grade of data.grades) {
+                    optionHTML +=  '<option value ="' + grade.id + '">' + grade.grade + '</option>';
+                }
+
+                grade_select.innerHTML = optionHTML;
+
+                });
+
+            });
+
+         }
+     </script>
      </div>
      <div id='pyramid' style="width: 50%; float:right;">
      {% for send in sends %}
