@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Route Pyramid</title>
+</head>
+<body>
+    <h1 style="text-align: center;">Welcome to Jordan's Route Pyramid</h1>
+ <div>
+     <div id='filters' style="width: 50%; float:left;">
+         <form method="POST">
+    {{ form.csrf_token }}
+    {{ form.climbing_style }}
+    {{ form.grade }}
+    <input type="submit">
+    </form>
+     </div>
+     <div id='pyramid' style="width: 50%; float:right;">
+     {% for send in sends %}
+{{send.date}} - {{send.route_name}} - {{send.grade}}<br>
+{% endfor %}
+         </div>
+     </div>
+</body>
+</html>
