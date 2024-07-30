@@ -1,0 +1,176 @@
+id,user_id,date,route_name,ascent_type,grade,angle,style
+1,1,2021/01/01,Straight Outta Compton,Redpoint,5.12d,Roof,Compression
+2,1,2021/01/02,Jesus Wept,Redpoint,5.12d,Overhang,Pockets
+3,1,2021/01/03,Zen and the Art of Masturbation,Redpoint,5.12d,Vertical,Crimps
+4,1,2021/01/04,Space Lord,Redpoint,5.12c,Overhang,Jugs
+5,1,2021/01/05,Heart Shaped Box,Redpoint,5.12c,Vertical,Crimps
+6,1,2021/01/06,Belly of the Beast,Redpoint,5.12c,Overhang,Jugs
+7,1,2021/01/07,Cell Block Six,Redpoint,5.12c,Overhang,Jugs
+8,1,2021/01/08,Mosaic,Redpoint,5.12c,Overhang,Jugs
+9,1,2021/01/10,Batarang,Redpoint,5.12b,Vertical,Crimps
+10,1,2021/01/11,Charro,Redpoint,5.12b,Vertical,Crimps
+11,1,2021/01/12,Bullet the New Sky,Onsight,5.12b,Vertical,Incuts
+12,1,2021/01/13,Babyface,Redpoint,5.12b,Overhang,Jugs
+13,1,2021/01/14,Far from God,Onsight,5.12b,Overhang,Jugs
+14,1,2021/01/15,Bullfighter,Redpoint,5.12b,Overhang,Crimps
+15,1,2021/01/16,This is the City,Redpoint,5.12a,Overhang,Crimps
+16,1,2021/01/17,Where Egos Dare,Redpoint,5.12a,Vertical,Jam
+17,1,2021/01/18,Honey Bucket,Redpoint,5.12a,Overhang,Jugs
+18,1,2021/01/19,49,Redpoint,5.12a,Overhang,Jugs
+19,1,2021/01/20,Hot Tamale Baby,Redpoint,5.12a,Overhang,Jugs
+20,1,2021/01/21,Twinkie,Onsight,5.12a,Overhang,Jugs
+21,1,2021/01/22,Starry,Onsight,5.12a,Overhang,Jugs
+22,1,2021/01/23,Schneezal,Onsight,5.12a,Vertical,Crimps
+23,1,2021/01/24,Crumblies,Onsight,5.12a,Overhang,Jugs
+24,1,2021/01/25,Posse Whipped,Onsight,5.12a,Vertical,Crimps
+25,1,2021/01/26,The Serf P1,Onsight,5.11d,Vertical,Crimps
+26,1,2021/01/27,Annunaki,Redpoint,5.11d,Overhang,Jam
+27,1,2021/01/29,Lunchables,Onsight,5.11d,Overhang,Jugs
+28,1,2021/01/30,Return of Chris Snyder,Onsight,5.11d,Overhang,Jugs
+29,1,2021/01/31,Toxic Hueco,Redpoint,5.11d,Vertical,Crimps
+30,1,2021/02/02,Happy Fisherman,Onsight,5.11d,Vertical,Crimps
+31,1,2021/02/03,Gold Rush,Onsight,5.11d,Overhang,Incuts
+32,1,2021/02/27,Big Iron on His Hip,Redpoint,v7,Slab,Crimps
+33,1,2020/11/25,Bathtub,Redpoint,v5,Slab,Crimps
+34,1,2021/12/04,Sonic Youth,Onsight,5.11d,Overhang,Crimps
+35,1,2021/08/22,Dr Goodkind,Onsight,5.12a,Overhang,Jugs
+36,1,2021/12/09,Jones'n,Redpoint,v5,Vertical,Compression
+37,1,2021/12/09,Rail to Seam,Onsight,v4,Vertical,Incuts
+38,1,2022/01/01,Dusty Coffee,Redpoint,v6,Vertical,All
+39,1,2022/01/24,Orange Top Blue Sky,Redpoint,v8,Overhang,Crimps
+40,1,2022/02/05,The Clapper,Redpoint,v6,Vertical,Pinch
+41,1,2022/02/06,Smooth Shrip,Onsight,v6,Vertical,Crimps
+42,1,2022/02/11,Paper Crane,Redpoint,v8,Vertical,Compression
+43,1,2022/04/02,Sacrificial Lizard,Onsight,5.11b,Vertical,Crimps
+44,1,2022/04/09,Heretic Wisdom,Onsight,5.12a,Vertical,Crimps
+45,1,2022/04/10,The Frog,Onsight,5.12a,Vertical,Crimps
+46,1,2022/04/24,The Sadness,Onsight,5.12a,Vertical,Crimps
+47,1,2021/01/28,Wake and Bake,Redpoint,5.11d,Overhang,Jugs
+48,1,2020/11/29,Mr Moran,Redpoint,v7,Overhang,Slopers
+49,1,2021/02/27,Choir Boys Light,Redpoint,v7,Roof,Compression
+50,1,2020/11/25,Monkey Bars Right,Redpoint,v6,Overhang,Crimps
+51,1,2022/02/06,Grovel Roof,Redpoint,v4,Vertical,Slopers
+52,1,2022/02/05,Acid Wash Right Jug Start,Redpoint,v7,Overhang,Compression
+53,1,2021/02/26,Mexican Chicken,Redpoint,v6,Roof,Crimps
+54,1,2021/02/22,Speedbump,Redpoint,v7,Roof,Compression
+55,1,2021/02/21,Baby Face,Redpoint,v7,Overhang,Crimps
+56,1,2021/02/17,Dean's Trip,Redpoint,v5,Overhang,Crimps
+57,1,2021/02/16,Sign of the Cross,Onsight,v3,Vertical,Crimps
+58,1,2021/01/16,Nut Dragger,Redpoint,v6,Overhang,Slopers
+59,1,2021/01/03,Bard's Arete,Onsight,v5,Vertical,Crimps
+60,1,2021/01/03,Go Granny Go,Redpoint,v5,Overhang,Crimps
+61,1,2021/01/03,Pain Grain SDS,Redpoint,v7,Overhang,Crimps
+62,1,2020/12/13,Donkey Punch,Redpoint,v6,Vertical,Crimps
+63,1,2020/12/13,My Tan,Redpoint,v7,Overhang,Crimps
+64,1,2020/12/12,Face Plate,Redpoint,v6,Overhang,Crimps
+65,1,2022/04/24,Khaleesi,Onsight,5.11c,Vertical,Crimps
+66,1,2022/04/25,Man Eater,Redpoint,5.12a,Overhang,Crimps
+67,1,2022/05/13,Crosta Panic,Onsight,5.12a,Vertical,Crimps
+68,1,2022/08/19,Super Mama,Redpoint,5.13b,Vertical,Crimps
+69,1,2022/05/14,Ten amigos pa jodelos,Redpoint,5.12b,Vertical,Pockets
+70,1,2022/05/09,El vikari,Onsight,5.12b,Vertical,Pockets
+71,1,2022/05/09,El sikari,Onsight,5.11d,Vertical,Pockets
+72,1,2022/10/21,OG Pimp Juice,Onsight,5.12a,Overhang,Jugs
+73,1,2023/06/11,The Big Calm,Onsight,5.12b,Overhang,Jugs
+74,1,2023/06/13,Popcorn,Onsight,5.12b,Overhang,Jugs
+75,1,2023/06/13,Sweet Pea,Onsight,5.12a,Overhang,Jugs
+76,1,2023/06/14,Vertical Smile,Onsight,5.12c,Overhang,Slopers
+77,1,2023/06/16,Brother Clucker,Onsight,5.12b,Vertical,Crimps
+78,1,2023/06/16,Braintree,Redpoint,5.12c,Overhang,Crimps
+79,1,2023/06/10,Dr. Goodkind,Redpoint,5.12a,Overhang,Jugs
+80,1,2023/06/09,Zoaster Toster,Redpoint,5.11d,Overhang,Jugs
+81,1,2023/05/27,Gold Standard,Redpoint,5.12b,Vertical,Crimps
+82,1,2022/11/22,The Force,Redpoint,5.13a,Overhang,Incuts
+83,1,2022/11/12,Supafly,Redpoint,5.12a,Overhang,Pockets
+84,1,2022/05/13,Bistec de Bicceps,Redpoint,5.12c,Overhang,Pockets
+85,1,2022/10/22,Collision Damage,Redpoint,5.11d,Overhang,Jugs
+86,1,2022/10/23,Malice,Redpoint,5.12c,Overhang,Pinch
+87,1,2022/11/08,Stunning the Hog,Redpoint,5.12d,Overhang,Pinch
+88,1,2022/11/21,Maizy Mae,Redpoint,5.13a,Overhang,Crimps
+89,1,2022/11/21,Dirty Smelly Hippie,Redpoint,5.13b,Overhang,Pockets
+90,1,2022/10/25,Prometheus Unbound,Redpoint,5.13a,Overhang,Pockets
+91,1,2022/04/02,Cry Baby,Redpoint,5.12a,Overhang,Compression
+92,1,2022/04/02,Swiss Arete,Redpoint,5.12a,Overhang,Jugs
+93,1,2023/06/17,Functional Idiot,Onsight,5.12b,Overhang,Jugs
+94,1,2023/06/19,Looking for yesterday,Onsight,5.12a,Vertical,Incuts
+95,1,2023/06/19,Uncle Bill,Redpoint,5.12b,Overhang,Incuts
+96,1,2023/06/19,Welcome Back Cobble,Redpoint,5.12d,Overhang,Slopers
+97,1,2023/06/16,51 (Scoops),Redpoint,5.12c,Overhang,Crimps
+98,1,2022/04/26,Sidewinder,Redpoint,5.12b,Overhang,Crimps
+99,1,2023/06/04,Shaguar,Onsight,5.12c,Vertical,Crimps
+100,1,2023/06/04,Soul Bossa Nova,Onsight,5.12b,Vertical,Crimps
+101,1,2023/06/06,Bo Cleevil,Redpoint,5.13b,Vertical,Crimps
+102,1,2023/06/03,Center El Shinto,Redpoint,5.12b,Vertical,Crimps
+103,1,2023/07/03,Wyoming Flower Child,Redpoint,5.11d,Vertical,Crimps
+104,1,2023/07/01,Ruby Shooter,Redpoint,5.12b,Overhang,Incuts
+105,1,2023/07/01,The Devil Wears Spurs,Redpoint,5.11d,Vertical,Pockets
+106,1,2023/07/10,Helion,Redpoint,5.13c,Overhang,Pockets
+107,1,2023/07/08,Wu-Tang's Wild Shinto Ride,Redpoint,5.12a,Vertical,Crimps
+108,1,2023/07/08,Left El Shinto,Redpoint,5.12b,Vertical,Crimps
+109,1,2023/07/15,Dope Shinto,Redpoint,5.12a,Vertical,Crimps
+110,1,2023/07/16,Sid and Nancy,Onsight,5.12a,Overhang,Pockets
+111,1,2023/08/18,Holla,Redpoint,5.12d,Overhang,Pockets
+112,1,2023/08/13,Sky Pilot,Redpoint,5.13d,Vertical,Crimps
+113,1,2023/08/19,When I was a Young Girl,Redpoint,5.13a,Overhang,Pockets
+114,1,2023/10/16,Syrtaki Lessons,Redpoint,5.13a,Overhang,Tufa
+115,1,2022/10/14,Ricounet,Onsight,5.11d,Vertical,Tufa
+116,1,2023/10/12,Lucky Strike,Redpoint,5.12b,Overhang,Jugs
+117,1,2023/10/12,Bosmogy,Redpoint,5.12d,Vertical,Crimps
+118,1,2023/10/09,Kalypige,Onsight,5.11c,Vertical,Tufa
+119,1,2023/10/07,Armata Sikati,Onsight,5.12b,Overhang,Tufa
+120,1,2023/10/06,0.07 Seconds,Redpoint,5.12b,Overhang,Jugs
+121,1,2023/10/04,Mindboggle,Redpoint,5.12c,Overhang,Tufa
+122,1,2023/10/03,Feta,Onsight,5.11b,Overhang,Tufa
+123,1,2023/10/03,Elies,Onsight,5.12a,Overhang,Tufa
+124,1,2023/09/30,Pomponpidoux,Redpoint,5.12b,Vertical,Tufa
+125,1,2023/09/27,DNA,Onsight,5.11d,Overhang,Tufa
+126,1,2023/09/27,Ivi,Redpoint,5.12a,Overhang,Tufa
+127,1,2023/10/06,Timba Climber,Onsight,5.12b,Vertical,Crimps
+128,1,2023/10/03,Kulturistica,Redpoint,5.12b,Overhang,Tufa
+129,1,2023/10/09,Tufantastic,Onsight,5.12c,Overhang,Tufa
+130,1,2023/10/21,Ya Agori Mu,Onsight,5.12a,Vertical,Tufa
+131,1,2023/10/22,Lulu in the Sky,Onsight,5.12b,Overhang,Tufa
+132,1,2023/11/02,Snozberries,Onsight,5.11d,Overhang,Jugs
+133,1,2023/11/04,Don't call it a comeback,Onsight,5.11d,Overhang,Incuts
+134,1,2023/11/05,Hippie Core Drill Machine,Onsight,5.12a,Overhang,Jugs
+135,1,2023/11/04,Yoko Ono,Redpoint,5.12c,Vertical,Incuts
+136,1,2023/11/14,Blue Eyed Honkey Jesus,Onsight,5.12b,Overhang,Jugs
+137,1,2023/11/15,Kick Me In The Jimmie,Redpoint,5.12a,Overhang,Incuts
+138,1,2021/01/09,Sliding Across a Million Years,Redpoint,5.12b,Overhang,Jugs
+139,1,2021/01/23,Monkey Wrench,Redpoint,v7,Vertical,Crimps
+140,1,2023/11/19,Reload,Redpoint,5.12c,Overhang,Incuts
+141,1,2023/11/20,Snooker,Redpoint,5.13a,Overhang,Incuts
+142,1,2023/11/25,Buff the Wood,Redpoint,5.12b,Overhang,Crimps
+143,1,2023/11/29,Stain,Redpoint,5.12c,Overhang,Pockets
+144,1,2023/12/17,Synapse Collapse,Onsight,5.11d,Overhang,Jugs
+145,1,2023/12/17,Cannabis ,Onsight,5.12a,Overhang,Crimps
+146,1,2023/12/30,Steep Thrills,Onsight,5.12a,Overhang,Incuts
+147,1,2024/01/06,Spittin' Venom,Redpoint,v8,Overhang,Crimps
+148,1,2024/01/06,Welcome to Detroit,Redpoint,v5,Overhang,Compression
+149,1,2024/02/17,Hesher Was Here,Redpoint,v8,Vertical,Crimps
+150,1,2024/02/17,High Noon,Redpoint,v8,Vertical,Crimps
+151,1,2024/02/17,Ugly Duckling,Redpoint,v6,Overhang,Jugs
+152,1,2024/02/17,Mr Rippler,Redpoint,v6,Roof,Pockets
+153,1,2024/02/18,Pink Lady,Onsight,v6,Roof,Jugs
+154,1,2024/02/25,Poison Control,Redpoint,v9,Vertical,Crimps
+155,1,2024/03/07,Delicatessen,Onsight,5.12a,Overhang,Incuts
+156,1,2024/03/07,Galunlati,Onsight,5.12b,Overhang,Incuts
+157,1,2024/03/07,Magnum Opus,Redpoint,5.12a,Overhang,Incuts
+158,1,2024/03/10,Herd Mentality,Onsight,5.12c,Overhang,Slopers
+159,1,2024/03/29,Chainsaw Massacre,Onsight,5.12a,Overhang,Incuts
+160,1,2024/03/31,Tuskan Raider,Redpoint,5.12d,Overhang,Pockets
+161,1,2024/04/01,Triple Sec,Redpoint,5.12d,Vertical,Pockets
+162,1,2024/05/11,Cling Free,Redpoint,5.12b,Vertical,Crimps
+163,1,2024/05/24,Sika 13,Redpoint,5.13a,Vertical,Crimps
+164,1,2024/06/17,Butch Pocket and the Sundance Pump,Redpoint,5.12a,Vertical,Pockets
+165,1,2024/06/19,Limestone Cowboy,Onsight,5.12a,Vertical,Pockets
+166,1,2024/06/20,Burnt Beans and Coffee,Redpoint,5.12c,Vertical,Pockets
+167,1,2024/06/23,Wicked Felina,Onsight,5.12b,Vertical,Pockets
+168,1,2024/07/07,Blue Light Special,Redpoint,5.13b,Vertical,Crimps
+169,1,2024/07/10,Born on the 4th of July,Onsight,5.12a,Vertical,Pockets
+170,1,2024/07/11,Baal,Onsight,5.12c,Vertical,Slopers
+171,1,2024/07/14,No Way Out,Onsight,5.12a,Vertical,Pockets
+172,1,2024/07/14,Static Death,Redpoint,5.13a,Overhang,Incuts
+173,1,2024/07/21,Great White Behemoth,Redpoint,5.12b,Vertical,Pockets
+174,1,2024/07/25,High Park Rodeo,Redpoint,5.13b,Vertical,Crimps
+175,1,2024/07/25,The Jizzleberry Bush,Redpoint,5.12a,Vertical,Crimps

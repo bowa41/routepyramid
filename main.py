@@ -2,67 +2,62 @@ from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean
+from flask_wtf import FlaskForm
+from wtforms import SelectField
 
-
-'''
-Install the required packages first: 
-Open the Terminal in PyCharm (bottom left). 
-
-On Windows type:
-python -m pip install -r requirements.txt
-
-On MacOS type:
-pip3 install -r requirements.txt
-
-This will install the packages from requirements.txt for this project.
-'''
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
+app.config['SECRET_KEY'] = 'secret'
 
 # CREATE DB
 class Base(DeclarativeBase):
     pass
 # Connect to Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
+
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
+#Create Flask Filters
+class FilterForm(FlaskForm):
+    climbing_style = SelectField("Climbing Style", choices=[("route", "Route"), ("boulder", "Boulder")])
+    grade = SelectField("Grade", choices=[])
 
-# Cafe TABLE Configuration
+# Sends TABLE Configuration
 class Sends(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
-    map_url: Mapped[str] = mapped_column(String(500), nullable=False)
-    img_url: Mapped[str] = mapped_column(String(500), nullable=False)
-    location: Mapped[str] = mapped_column(String(250), nullable=False)
-    seats: Mapped[str] = mapped_column(String(250), nullable=False)
-    has_toilet: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    has_wifi: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    has_sockets: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    can_take_calls: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    coffee_price: Mapped[str] = mapped_column(String(250), nullable=True)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    date: Mapped[str] = mapped_column(String(20), nullable=False)
+    route_name: Mapped[str] = mapped_column(String(250), nullable=False)
+    ascent_type: Mapped[str] = mapped_column(String(20), nullable=False)
+    grade: Mapped[str] = mapped_column(String(20), nullable=False)
+    angle: Mapped[str] = mapped_column(String(20), nullable=False)
+    style: Mapped[str] = mapped_column(String(20), nullable=False)
 
-    # def to_dict(self):
-    #     # Method 1.
-    #     # dictionary = {}
-    #     # # Loop through each column in the data record
-    #     # for column in self.__table__.columns:
-    #     #     # Create a new dictionary entry;
-    #     #     # where the key is the name of the column
-    #     #     # and the value is the value of the column
-    #     #     dictionary[column.name] = getattr(self, column.name)
-    #     # return dictionary
-    #
-    #     # Method 2. Altenatively use Dictionary Comprehension to do the same thing.
-    #     return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+    def to_dict(self):
+        # Use Dictionary Comprehension to create json
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
+class Grade(db.Model):
+    grade_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    grade_style: Mapped[str] = mapped_column(String(20), nullable=False)
+    grade: Mapped[str] = mapped_column(String(20), nullable=False)
+
+
+
 
 with app.app_context():
     db.create_all()
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template("index.html")
+    form = FilterForm()
+    form.grade.choices = [(grade.grade_id, grade.grade) for grade in Grade.query.filter_by(grade_style="Route").all()]
+    # select all records from the database for specific user.
+    all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
+    # return jsonify(sends=[send.to_dict() for send in all_sends])
+    return render_template("index.html", sends=all_sends, form=form)
 
 # @app.route("/random")
 # def get_random_cafe():
@@ -107,7 +102,7 @@ def home():
     # })
 
     # convert to dictionary using a function and let flask automatically convert to json
-    return jsonify(cafe=random_cafe.to_dict())
+    # return jsonify(cafe=random_cafe.to_dict())
 
 # @app.route("/search/", methods=['GET', 'POST'])
 # def get_local_cafes():
@@ -119,11 +114,11 @@ def home():
 #     return jsonify(error={"Not Found": "Sorry, we don't have a cafe at that location."})
 
 
-@app.route("/all")
-def get_all_cafes():
-    # select all records from the database.
-    all_cafes = db.session.execute(db.select(Cafe)).scalars().all()
-    return jsonify(cafes=[cafe.to_dict() for cafe in all_cafes])
+# @app.route("/all")
+# def get_all_cafes():
+#     # select all records from the database.
+#     all_cafes = db.session.execute(db.select(Cafe)).scalars().all()
+#     return jsonify(cafes=[cafe.to_dict() for cafe in all_cafes])
 
 
 # @app.route("/add", methods=['GET', 'POST'])
