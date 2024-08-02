@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Route Pyramid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     {{ font_awesome.load_js() }}
     <link
       rel="stylesheet"
@@ -10,9 +11,10 @@
     />
 </head>
 <body>
-    <h1 style="text-align: center;">Welcome to Jordan's Route Pyramid</h1>
- <div>
-     <div id='filters' style="width: 50%; float:left;">
+
+ <div  class="content">
+     <div id='filters'>
+         Jordan's Pyramid
          <form method="POST">
     {{ form.csrf_token }}
     {{ form.climbing_style }}
@@ -43,7 +45,7 @@
          }
      </script>
      </div>
-     <div id='pyramid' style="width: 50%; float:right;">
+     <div id='pyramid'>
 <!--     {% for send in sends %}-->
 <!--{{send.date}} - {{send.route_name}} - {{send.grade}}<br>-->
 <!--{% endfor %}-->
@@ -53,18 +55,19 @@
 <div class="layer">
   <div class="blocks">
 
-    <div class="blocks-no-border">{{layer["grade"]}}</div>
+    <div class="block blocks-no-border">{{layer["grade"]}}</div>
      <div class="all-blocks">
     {% for climb in layer["climbs"] %}
     <div class="block {{climb.ascent}} y{{climb.date[:4]}}">
          <strong>{{ climb.name }}</strong>
         <span class="block-date">{{ climb.date }}</span>
-          <div class='icon container'></div>
+          <div class='icon-container'>
             {% if climb.ascent == "Redpoint" %}
                 {{font_awesome.render_icon("fas fa-circle")}}
             {% else %}
                 {{font_awesome.render_icon("fas fa-bolt")}}
             {% endif %}
+              </div>
              </div>
     {% endfor %}
     </div>
