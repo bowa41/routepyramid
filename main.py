@@ -1,10 +1,9 @@
 from flask import Flask, jsonify, render_template, request
+from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Boolean, select
 from flask_wtf import FlaskForm
 from wtforms import SelectField
-
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
