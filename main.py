@@ -79,7 +79,7 @@ def home():
 
         outer_list = []
 
-        for grade in grade_list:
+        for grade in grade_list[::-1]:
             inner_list = []
             for send in selected_sends:
                 if send.grade == grade:
@@ -87,7 +87,6 @@ def home():
                     inner_list.append({"name":send.route_name, "date":send.date, "ascent":send.ascent_type})
             if len(inner_list) > 0:
                 outer_list.append({"grade":grade, "climbs": inner_list})
-        print(outer_list)
 
         return render_template('index.html', sends=selected_sends, layers=outer_list, form=form)
         # return '<h1>Style: {}, Grade: {}</h1>'.format(form.climbing_style.data, grade.grade)
