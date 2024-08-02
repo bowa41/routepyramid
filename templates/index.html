@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Route Pyramid</title>
+    {{ font_awesome.load_js() }}
 </head>
 <body>
     <h1 style="text-align: center;">Welcome to Jordan's Route Pyramid</h1>
@@ -39,9 +40,37 @@
      </script>
      </div>
      <div id='pyramid' style="width: 50%; float:right;">
-     {% for send in sends %}
-{{send.date}} - {{send.route_name}} - {{send.grade}}<br>
-{% endfor %}
+<!--     {% for send in sends %}-->
+<!--{{send.date}} - {{send.route_name}} - {{send.grade}}<br>-->
+<!--{% endfor %}-->
+
+
+{% for layer in layers %}
+<div class="layer">
+  <div class="blocks">
+
+    <div class="blocks-no-border">{{layer["grade"]}}</div>
+     <div class="all-blocks">
+    {% for climb in layer["climbs"] %}
+    <div class="block {{climb.ascent}} y{{climb.date[:4]}}">
+         <strong>{{ climb.name }}</strong>
+        <span class="block-date">{{ climb.date }}</span>
+          <div class='icon container'></div>
+            {% if climb.ascent == "Redpoint" %}
+                {{font_awesome.render_icon("fas fa-circle")}}
+            {% else %}
+                {{font_awesome.render_icon("fas fa-bolt")}}
+            {% endif %}
+             </div>
+    {% endfor %}
+    </div>
+    </div>
+   </div>
+         {% endfor %}
+</div>
+
+
+
          </div>
      </div>
 </body>

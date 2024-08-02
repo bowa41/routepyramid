@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from flask_wtf import FlaskForm
 from wtforms import SelectField
+from flask_font_awesome import FontAwesome
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
@@ -16,6 +17,8 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+font_awesome = FontAwesome(app)
+
 
 #Create Flask Filters
 class FilterForm(FlaskForm):
@@ -74,7 +77,19 @@ def home():
         # Use .scalars() to get the elements rather than entire rows from the database
         selected_sends = result.scalars().all()
 
-        return render_template('index.html', sends=selected_sends, form=form)
+        outer_list = []
+
+        for grade in grade_list:
+            inner_list = []
+            for send in selected_sends:
+                if send.grade == grade:
+                    print(send.route_name)
+                    inner_list.append({"name":send.route_name, "date":send.date, "ascent":send.ascent_type})
+            if len(inner_list) > 0:
+                outer_list.append({"grade":grade, "climbs": inner_list})
+        print(outer_list)
+
+        return render_template('index.html', sends=selected_sends, layers=outer_list, form=form)
         # return '<h1>Style: {}, Grade: {}</h1>'.format(form.climbing_style.data, grade.grade)
 
     return render_template("index.html", sends=all_sends, form=form)
