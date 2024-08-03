@@ -83,7 +83,6 @@ def home():
            inner_list = []
            for send in selected_sends:
                if send.grade == grade:
-                   print(send.route_name)
                    inner_list.append({"name":send.route_name, "date":send.date, "ascent":send.ascent_type})
            if len(inner_list) > 0:
                outer_list.append({"grade":grade, "climbs": inner_list})
