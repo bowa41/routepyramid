@@ -35,27 +35,42 @@
     <input type="submit">
     </form>
      <script>
-        let style_select = document.getElementById('climbing_style');
-        let grade_select = document.getElementById('grade');
 
-        style_select.onchange = function() {
-            style = style_select.value;
+         let style_select = document.getElementById('climbing_style');
+let grade_select = document.getElementById('grade');
 
-            fetch('/grades/' + style).then(function(response) {
-                response.json().then(function(data) {
-                let optionHTML = '';
+let last_boulder = {{ highest_boulder }};
+let last_route = '';
 
-                for (let grade of data.grades) {
-                    optionHTML +=  '<option value ="' + grade.id + '">' + grade.grade + '</option>';
-                }
+style_select.onchange = function() {
+    let currentStyle = style_select.value;
 
-                grade_select.innerHTML = optionHTML;
+    // Store the current grade value based on the current style
+    if (currentStyle === 'boulder') {
+        last_route = grade_select.value;
+    } else {
+        last_boulder = grade_select.value;
+    }
 
-                });
+    fetch('/grades/' + currentStyle).then(function(response) {
+        response.json().then(function(data) {
+            let optionHTML = '';
 
-            });
+            for (let grade of data.grades) {
+                optionHTML += '<option value="' + grade.id + '">' + grade.grade + '</option>';
+            }
 
-         }
+            grade_select.innerHTML = optionHTML;
+
+            // Set the grade_select value to the last stored value for the selected style
+            if (currentStyle === 'boulder' && last_boulder) {
+                grade_select.value = last_boulder;
+            } else if (currentStyle === 'route' && last_route) {
+                grade_select.value = last_route;
+            }
+        });
+    });
+};
 
          // script.js
 // Get the modal

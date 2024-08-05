@@ -106,7 +106,7 @@ def home():
 
     if highest_boulder:
         send, grade = highest_boulder
-        highest_boulder_grade = grade.grade
+        highest_boulder_grade = grade.grade_id
 
     # On submit, search for the selected grade and filter
     if request.method == 'POST':
