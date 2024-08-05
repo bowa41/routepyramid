@@ -92,6 +92,7 @@ def home():
                          .filter(Grade.grade_style == 'route').order_by(Grade.grade.desc()).first())
         send, grade = highest_route
         form.grade.data = str(grade.grade_id)
+        highest_route_grade = grade.grade_id
 
     # get all grades for the selected climbing style
     form.grade.choices = [(grade.grade_id, grade.grade) for grade in
@@ -114,10 +115,10 @@ def home():
         grade_list = [grade.grade for grade in
                           Grade.query.filter_by(grade_style=form.climbing_style.data)
                           .where(Grade.grade_id <= grade.grade_id).all()]
-        slice_grade_list = grade_list[-int(form.pyramid_levels.data):]
+        sliced_grade_list = grade_list[-int(form.pyramid_levels.data):]
 
         # Construct a query to select from the database. Returns the rows in the database
-        result = db.session.execute(db.select(Sends).where(Sends.grade.in_(slice_grade_list))
+        result = db.session.execute(db.select(Sends).where(Sends.grade.in_(sliced_grade_list))
                                                     .where(Sends.style.in_(form.style.data))
                                                     .where(Sends.angle.in_(form.angle.data))
                                                     .where(Sends.year.in_(form.year.data)).order_by("date"))
@@ -154,7 +155,8 @@ def home():
         return render_template('index.html', sends=selected_sends, layers=outer_list, form=form)
         # return '<h1>Style: {}, Grade: {}</h1>'.format(form.climbing_style.data, grade.grade)
 
-    return render_template("index.html", sends=all_sends, form=form, highest_boulder=highest_boulder_grade)
+    return render_template("index.html", sends=all_sends, form=form,
+                           highest_boulder=highest_boulder_grade, highest_route=highest_route_grade)
 
 @app.route("/grades/<style>")
 def climbing_grades(style):
