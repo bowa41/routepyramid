@@ -154,7 +154,7 @@ def home():
         return render_template('index.html', sends=selected_sends, layers=outer_list, form=form)
         # return '<h1>Style: {}, Grade: {}</h1>'.format(form.climbing_style.data, grade.grade)
 
-    return render_template("index.html", sends=all_sends, form=form)
+    return render_template("index.html", sends=all_sends, form=form, highest_boulder=highest_boulder_grade)
 
 @app.route("/grades/<style>")
 def climbing_grades(style):
