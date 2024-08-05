@@ -92,7 +92,7 @@ def home():
     # get all grades for the selected climbing style
     form.grade.choices = [(grade.grade_id, grade.grade) for grade in
                           Grade.query.filter_by(grade_style=form.climbing_style.data).all()]
-
+    form.grade.data = "32"
     # select all records from the database for specific user.
     all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
 
