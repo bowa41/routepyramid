@@ -31,63 +31,46 @@
     {{ form.style }}
     {{ form.angle }}
     {{ form.year }}
+    This is my highest bouldering grade: {{highest_boulder}}
     <input type="submit">
     </form>
      <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let style_select = document.getElementById('climbing_style');
-    let grade_select = document.getElementById('grade');
 
-    function updateGrades(style) {
-        fetch('/grades/' + style)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!Array.isArray(data.grades)) {
-                    throw new Error('Grades data is not an array');
-                }
+         let style_select = document.getElementById('climbing_style');
+let grade_select = document.getElementById('grade');
 
-                let optionHTML = '';
+let last_boulder = {{ highest_boulder }};
+let last_route = '';
 
-                // Generate option elements
-                for (let grade of data.grades) {
-                    optionHTML += `<option value="${grade.id}">${grade.grade}</option>`;
-                }
+style_select.onchange = function() {
+    let currentStyle = style_select.value;
 
-                // Populate the grade select dropdown
-                grade_select.innerHTML = optionHTML;
-
-                // Set default value if applicable
-                if (data.grades.length > 6) {
-                    grade_select.value = data.grades[6].id; // Set the grade at index 6 as default
-                } else {
-                    grade_select.value = ''; // No grade at index 6, so reset or keep the default prompt
-                }
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-                // Optionally, you might want to display an error message to the user.
-            });
+    // Store the current grade value based on the current style
+    if (currentStyle === 'boulder') {
+        last_route = grade_select.value;
+    } else {
+        last_boulder = grade_select.value;
     }
 
-    // Event listener for style selection
-    style_select.onchange = function() {
-        let style = style_select.value;
-        if (style) {
-            updateGrades(style);
-        }
-    }
+    fetch('/grades/' + currentStyle).then(function(response) {
+        response.json().then(function(data) {
+            let optionHTML = '';
 
-    // Initial load: check if there is a pre-selected style or default to the first one
-    if (style_select && style_select.options.length > 0) {
-        let initialStyle = style_select.value || style_select.options[0].value;
-        updateGrades(initialStyle);
-    }
-});
+            for (let grade of data.grades) {
+                optionHTML += '<option value="' + grade.id + '">' + grade.grade + '</option>';
+            }
+
+            grade_select.innerHTML = optionHTML;
+
+            // Set the grade_select value to the last stored value for the selected style
+            if (currentStyle === 'boulder' && last_boulder) {
+                grade_select.value = last_boulder;
+            } else if (currentStyle === 'route' && last_route) {
+                grade_select.value = last_route;
+            }
+        });
+    });
+};
 
          // script.js
 // Get the modal
