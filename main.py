@@ -5,6 +5,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from flask_wtf import FlaskForm
 from wtforms import SelectField
 from flask_font_awesome import FontAwesome
+from wtforms.fields.choices import SelectMultipleField
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
@@ -21,15 +23,14 @@ font_awesome = FontAwesome(app)
 
 
 #Create Flask Filters
-class FilterForm(FlaskForm):
-    climbing_style = SelectField("Climbing Style", choices=[("route", "Route"), ("boulder", "Boulder")])
-    grade = SelectField("Grade", choices=[])
+
 
 # Sends TABLE Configuration
 class Sends(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False)
     date: Mapped[str] = mapped_column(String(20), nullable=False)
+    year:  Mapped[str] = mapped_column(String(4), nullable=False)
     route_name: Mapped[str] = mapped_column(String(250), nullable=False)
     ascent_type: Mapped[str] = mapped_column(String(20), nullable=False)
     grade: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -49,10 +50,41 @@ class Grade(db.Model):
 with app.app_context():
     db.create_all()
 
+# create date dropdown for Form
+    date_list = [(year.year, year.year) for year in (db.session.query(Sends).order_by("year").distinct())]
+    date_list = list(dict.fromkeys(date_list))
+
+class FilterForm(FlaskForm):
+    climbing_style = SelectField("Climbing Style",
+                                 choices=[("route", "Route"), ("boulder", "Boulder")])
+
+    grade = SelectField("Grade", choices=[])
+
+    pyramid_levels = SelectField("Levels",
+                                 choices=[("1","1"), ("2","2"),("3","3"),("4","4"),("5","5"), ("6","6")],
+                                 default="6")
+
+    style_list = ["Compression","Pockets","Crimps","Jugs","Incuts","Jam","Pinch","Slopers","Tufa"]
+    style = SelectMultipleField("Choose your option",
+                                choices=[("Compression","Compression"), ("Pockets","Pockets"),
+                                         ("Crimps","Crimps"), ("Jugs","Jugs"),
+                                         ("Incuts","Incuts"), ("Jam","Jam"), ("Pinch","Pinch"),
+                                         ("Slopers","Slopers"), ("Tufa","Tufa")],
+                                default=style_list)
+
+    angle_list = ["Slab","Vertical","Overhang","Roof"]
+    angle = SelectMultipleField("Choose your option",
+                                choices=[("Slab","Slab"), ("Vertical","Vertical"),
+                                        ("Overhang","Overhang"), ("Roof","Roof")],
+                                default=angle_list)
+
+    year = SelectMultipleField("Choose your option", choices=(date_list), default=[str(datetime.now().year)])
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
     form = FilterForm()
+
     # set filter for first time load
     if not form.climbing_style.data:
         form.climbing_style.data = "route"
@@ -70,9 +102,13 @@ def home():
         grade_list = [grade.grade for grade in
                           Grade.query.filter_by(grade_style=form.climbing_style.data)
                           .where(Grade.grade_id <= grade.grade_id).all()]
+        slice_grade_list = grade_list[-int(form.pyramid_levels.data):]
 
         # Construct a query to select from the database. Returns the rows in the database
-        result = db.session.execute(db.select(Sends).where(Sends.grade.in_(grade_list)).order_by("date"))
+        result = db.session.execute(db.select(Sends).where(Sends.grade.in_(slice_grade_list))
+                                                    .where(Sends.style.in_(form.style.data))
+                                                    .where(Sends.angle.in_(form.angle.data))
+                                                    .where(Sends.year.in_(form.year.data)).order_by("date"))
 
         # Use .scalars() to get the elements rather than entire rows from the database
         selected_sends = result.scalars().all()
