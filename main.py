@@ -88,13 +88,25 @@ def home():
     # set filter for first time load
     if not form.climbing_style.data:
         form.climbing_style.data = "route"
+        highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                         .filter(Grade.grade_style == 'route').order_by(Grade.grade.desc()).first())
+        send, grade = highest_route
+        form.grade.data = str(grade.grade_id)
 
     # get all grades for the selected climbing style
     form.grade.choices = [(grade.grade_id, grade.grade) for grade in
                           Grade.query.filter_by(grade_style=form.climbing_style.data).all()]
-    form.grade.data = "32"
+
     # select all records from the database for specific user.
     all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
+
+    #find highest bouldering grade
+    highest_boulder = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                             .filter(Grade.grade_style == 'boulder').order_by(Grade.grade.desc()).first())
+
+    if highest_boulder:
+        send, grade = highest_boulder
+        highest_boulder_grade = grade.grade
 
     # On submit, search for the selected grade and filter
     if request.method == 'POST':
