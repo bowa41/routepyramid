@@ -12,27 +12,30 @@
 </head>
 <body>
 
-   <div id="myModal" class="modal">
+<div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Modal Title</h2>
-            <p>This is a sample modal.</p>
+             <form method="POST">
+            <h2>Add a Send</h2>
+            <p>{{ add_form.climb_name }}</p>
+            <p>{{ add_form.grade }}</p>
+            <p>{{ add_form.ascent }}</p>
+            <p>{{ add_form.style }}</p>
+            <p>{{ add_form.angle }}</p>
+            <p>{{ form.search_form }}</p>
+            <input type="submit" value="Submit">
+             </form>
         </div>
     </div>
    <button class="custom-fab" id="openModalBtn">+</button>
  <div  class="content">
      <div id='filters'>
          Jordan's Pyramid
-         <form method="POST">
-    {{ form.csrf_token }}
-    {{ form.climbing_style }}
-    {{ form.grade }}
-    {{ form.pyramid_levels }}
-    {{ form.style }}
-    {{ form.angle }}
-    {{ form.year }}
-    This is my highest bouldering grade: {{highest_boulder}}
-    <input type="submit">
+    <form method=post>
+    {% for items in form %}
+             {{items}}
+             {%endfor%}
+    <input type="submit" value="Submit">
     </form>
      <script>
         let style_select = document.getElementById('climbing_style');
