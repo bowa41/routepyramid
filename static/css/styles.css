@@ -3,7 +3,7 @@
   font-family: 'Poppins';
 }
 
-div#filters form {
+form {
     margin-top: 12px;
     gap: 12px;
     display: flex;
