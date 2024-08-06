@@ -177,10 +177,7 @@ def home():
 
     if add_form.validate_on_submit():
         write_data(add_form)
-        print(form.grade.data)
-        # output = read_data(form)
         return redirect(url_for('home'))
-        # return render_template('index.html', form=form, add_form=add_form)
 
     # On submit, search for the selected grade and filter
     if form.validate_on_submit:
