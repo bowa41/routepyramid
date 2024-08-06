@@ -82,6 +82,8 @@ class FilterForm(FlaskForm):
 
 class AddForm(FlaskForm):
     # add_form = SubmitField('Add')
+    climb_name = StringField("Climb Name", render_kw={"placeholder": "Climb Name"})
+
     grade = SelectField("Grade", choices=[ ("1", "v1"), ("2", "v2"), ("3", "v3"),("4", "v4"),
         ("5", "v5"), ("6", "v6"),  ("7", "v7"), ("8", "v8"), ("9", "v9"), ("10", "v10"), ("11", "v11"), ("12", "v12"),
         ("13", "v13"), ("14", "v14"), ("15", "v15"), ("16", "v16"), ("17", "v17"),("18", "5.10a"), ("19", "5.10b"),
@@ -90,7 +92,7 @@ class AddForm(FlaskForm):
         ("33", "5.13d"), ("34", "5.14a"), ("35", "5.14b"),  ("36", "5.14c"), ("37", "5.14d"), ("38", "5.15a"),
         ("39", "5.15b"), ("40", "5.15c"), ("41", "5.15d")], render_kw={"id": "submit_grade"})
 
-    climb_name = StringField("Climb Name", render_kw={"placeholder": "Climb Name"})
+
     ascent = SelectField("Choose your option",
                         choices=[("Onsight", "Onsight"), ("Redpoint", "Redpoint")], render_kw={"id": "submit_ascent"})
 
