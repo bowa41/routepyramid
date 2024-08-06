@@ -12,96 +12,57 @@
 </head>
 <body>
 
-   <div id="myModal" class="modal">
+  <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
+            <form method="POST">
             <h2>Modal Title</h2>
-            <p>This is a sample modal.</p>
+            {% for items in add_form %}
+             {{items}}
+             {%endfor%}
+    <input type="submit" value="Submit" id="Add">
+                 </form>
         </div>
     </div>
    <button class="custom-fab" id="openModalBtn">+</button>
  <div  class="content">
      <div id='filters'>
          Jordan's Pyramid
-         <form method="POST" id="climbingForm">
-    {{ form.csrf_token }}
-    {{ form.climbing_style }}
-    {{ form.grade }}
-    {{ form.pyramid_levels }}
-    {{ form.style }}
-    {{ form.angle }}
-    {{ form.year }}
-             <input type="hidden" id="last_boulder_input" name="last_boulder" value="{{ highest_boulder }}">
-             <input type="hidden" id="last_route_input" name="last_route" value="{{ highest_route }}">
-    <input type="submit">
+         <form method="POST">
+{% for items in form %}
+             {{items}}
+             {%endfor%}
+    <input type="submit" value="Search for Sends" id="Search">
     </form>
      <script>
+        let style_select = document.getElementById('climbing_style');
+        let grade_select = document.getElementById('grade');
 
-         document.addEventListener('DOMContentLoaded', (event) => {
-            let style_select = document.getElementById('climbing_style');
-            let grade_select = document.getElementById('grade');
-            let last_boulder_input = document.getElementById('last_boulder_input');
-            let last_route_input = document.getElementById('last_route_input');
+        style_select.onchange = function() {
+    let style = style_select.value;
 
-            // Ensure the highest_boulder and highest_route values are properly escaped and converted to strings
-            let last_boulder = last_boulder_input.value;
-            let last_route = last_route_input.value;
-
-            // Function to set the correct grade value on page load
-            function setInitialGrade() {
-                let currentStyle = style_select.value;
-                if (currentStyle === 'boulder' && last_boulder) {
-                    grade_select.value = last_boulder;
-                } else if (currentStyle === 'route' && last_route) {
-                    grade_select.value = last_route;
-                }
+    fetch('/grades/' + style)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.grades) {
+                throw new Error('Data structure is incorrect');
             }
 
-            // Set initial grade on page load
-            setInitialGrade();
-
-            style_select.onchange = function() {
-                let currentStyle = style_select.value;
-
-                // Store the current grade value based on the current style
-                if (currentStyle === 'boulder') {
-                    last_route = grade_select.value;
-                    last_route_input.value = last_route; // Update hidden input
-                } else {
-                    last_boulder = grade_select.value;
-                    last_boulder_input.value = last_boulder; // Update hidden input
-                }
-
-                fetch('/grades/' + currentStyle).then(function(response) {
-                    response.json().then(function(data) {
-                        let optionHTML = '';
-
-                        for (let grade of data.grades) {
-                            optionHTML += '<option value="' + grade.id + '">' + grade.grade + '</option>';
-                        }
-
-                        grade_select.innerHTML = optionHTML;
-
-                        // Set the grade_select value to the last stored value for the selected style
-                        setInitialGrade();
-                    });
-                });
-            };
-
-            // Update hidden inputs before form submission
-            document.getElementById('climbingForm').onsubmit = function(e) {
-
-                e.preventDefault();
-
-                let currentStyle = style_select.value;
-                if (currentStyle === 'boulder') {
-                    last_boulder_input.value = grade_select.value;
-                } else {
-                    last_route_input.value = grade_select.value;
-                }
-            };
+            let optionHTML = '';
+            for (let grade of data.grades) {
+                optionHTML += `<option value="${grade.id}">${grade.grade}</option>`;
+            }
+            grade_select.innerHTML = optionHTML;
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
         });
-
+};
          // script.js
 // Get the modal
 var modal = document.getElementById("myModal");
@@ -131,10 +92,6 @@ window.onclick = function(event) {
      </script>
      </div>
      <div id='pyramid'>
-<!--     {% for send in sends %}-->
-<!--{{send.date}} - {{send.route_name}} - {{send.grade}}<br>-->
-<!--{% endfor %}-->
-
 
 {% for layer in layers %}
 <div class="layer">
