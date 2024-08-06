@@ -23,7 +23,7 @@
  <div  class="content">
      <div id='filters'>
          Jordan's Pyramid
-         <form method="POST">
+         <form method="POST" id="climbingForm">
     {{ form.csrf_token }}
     {{ form.climbing_style }}
     {{ form.grade }}
@@ -31,45 +31,76 @@
     {{ form.style }}
     {{ form.angle }}
     {{ form.year }}
+             <input type="hidden" id="last_boulder_input" name="last_boulder" value="{{ highest_boulder }}">
+             <input type="hidden" id="last_route_input" name="last_route" value="{{ highest_route }}">
     <input type="submit">
     </form>
      <script>
 
-         let style_select = document.getElementById('climbing_style');
-let grade_select = document.getElementById('grade');
+         document.addEventListener('DOMContentLoaded', (event) => {
+            let style_select = document.getElementById('climbing_style');
+            let grade_select = document.getElementById('grade');
+            let last_boulder_input = document.getElementById('last_boulder_input');
+            let last_route_input = document.getElementById('last_route_input');
 
-let last_boulder = {{ highest_boulder }};
-let last_route = '';
+            // Ensure the highest_boulder and highest_route values are properly escaped and converted to strings
+            let last_boulder = last_boulder_input.value;
+            let last_route = last_route_input.value;
 
-style_select.onchange = function() {
-    let currentStyle = style_select.value;
-
-    // Store the current grade value based on the current style
-    if (currentStyle === 'boulder') {
-        last_route = grade_select.value;
-    } else {
-        last_boulder = grade_select.value;
-    }
-
-    fetch('/grades/' + currentStyle).then(function(response) {
-        response.json().then(function(data) {
-            let optionHTML = '';
-
-            for (let grade of data.grades) {
-                optionHTML += '<option value="' + grade.id + '">' + grade.grade + '</option>';
+            // Function to set the correct grade value on page load
+            function setInitialGrade() {
+                let currentStyle = style_select.value;
+                if (currentStyle === 'boulder' && last_boulder) {
+                    grade_select.value = last_boulder;
+                } else if (currentStyle === 'route' && last_route) {
+                    grade_select.value = last_route;
+                }
             }
 
-            grade_select.innerHTML = optionHTML;
+            // Set initial grade on page load
+            setInitialGrade();
 
-            // Set the grade_select value to the last stored value for the selected style
-            if (currentStyle === 'boulder' && last_boulder) {
-                grade_select.value = last_boulder;
-            } else if (currentStyle === 'route' && last_route) {
-                grade_select.value = last_route;
-            }
+            style_select.onchange = function() {
+                let currentStyle = style_select.value;
+
+                // Store the current grade value based on the current style
+                if (currentStyle === 'boulder') {
+                    last_route = grade_select.value;
+                    last_route_input.value = last_route; // Update hidden input
+                } else {
+                    last_boulder = grade_select.value;
+                    last_boulder_input.value = last_boulder; // Update hidden input
+                }
+
+                fetch('/grades/' + currentStyle).then(function(response) {
+                    response.json().then(function(data) {
+                        let optionHTML = '';
+
+                        for (let grade of data.grades) {
+                            optionHTML += '<option value="' + grade.id + '">' + grade.grade + '</option>';
+                        }
+
+                        grade_select.innerHTML = optionHTML;
+
+                        // Set the grade_select value to the last stored value for the selected style
+                        setInitialGrade();
+                    });
+                });
+            };
+
+            // Update hidden inputs before form submission
+            document.getElementById('climbingForm').onsubmit = function(e) {
+
+                e.preventDefault();
+
+                let currentStyle = style_select.value;
+                if (currentStyle === 'boulder') {
+                    last_boulder_input.value = grade_select.value;
+                } else {
+                    last_route_input.value = grade_select.value;
+                }
+            };
         });
-    });
-};
 
          // script.js
 // Get the modal
