@@ -3,7 +3,7 @@ from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from flask_wtf import FlaskForm
-from wtforms import SelectField
+from wtforms import SelectField, StringField
 from flask_font_awesome import FontAwesome
 from wtforms.fields.choices import SelectMultipleField
 from datetime import datetime
@@ -80,10 +80,36 @@ class FilterForm(FlaskForm):
 
     year = SelectMultipleField("Choose your option", choices=(date_list), default=[str(datetime.now().year)])
 
+class AddForm(FlaskForm):
+    # add_form = SubmitField('Add')
+    grade = SelectField("Grade", choices=[ ("1", "v1"), ("2", "v2"), ("3", "v3"),("4", "v4"),
+        ("5", "v5"), ("6", "v6"),  ("7", "v7"), ("8", "v8"), ("9", "v9"), ("10", "v10"), ("11", "v11"), ("12", "v12"),
+        ("13", "v13"), ("14", "v14"), ("15", "v15"), ("16", "v16"), ("17", "v17"),("18", "5.10a"), ("19", "5.10b"),
+        ("20", "5.10c"), ("21", "5.10d"), ("22", "5.11a"), ("23", "5.11b"), ("24", "5.11c"),("25", "5.11d"), ("26", "5.12a"),
+        ("27", "5.12b"), ("28", "5.12c"), ("29", "5.12d"),  ("30", "5.13a"),("31", "5.13b"), ("32", "5.13c"),
+        ("33", "5.13d"), ("34", "5.14a"), ("35", "5.14b"),  ("36", "5.14c"), ("37", "5.14d"), ("38", "5.15a"),
+        ("39", "5.15b"), ("40", "5.15c"), ("41", "5.15d")], render_kw={"id": "submit_grade"})
+
+    climb_name = StringField("Climb Name", render_kw={"placeholder": "Climb Name"})
+    ascent = SelectField("Choose your option",
+                        choices=[("Onsight", "Onsight"), ("Redpoint", "Redpoint")], render_kw={"id": "submit_ascent"})
+
+    style = SelectField("Choose your option",
+                                choices=[("Compression","Compression"), ("Pockets","Pockets"),
+                                         ("Crimps","Crimps"), ("Jugs","Jugs"),
+                                         ("Incuts","Incuts"), ("Jam","Jam"), ("Pinch","Pinch"),
+                                         ("Slopers","Slopers"), ("Tufa","Tufa")], render_kw={"id": "submit_style"})
+
+    angle = SelectField("Choose your option",
+                                choices=[("Slab","Slab"), ("Vertical","Vertical"),
+                                        ("Overhang","Overhang"), ("Roof","Roof")], render_kw={"id": "submit_angle"})
+
+    # send_date = SelectField("Choose your option", choices=(date_list), default=[str(datetime.now().year)])
 
 @app.route("/", methods=["GET", "POST"])
 def home():
     form = FilterForm()
+    add_form = AddForm()
 
     # set filter for first time load
     if not form.climbing_style.data:
@@ -135,26 +161,10 @@ def home():
            if len(inner_list) > 0:
                outer_list.append({"grade":grade, "climbs": inner_list})
 
-        # outer_list = [
-        #     {
-        #         "grade": grade,
-        #         "climbs": [
-        #             {
-        #                 "name": send.route_name,
-        #                 "date": send.date,
-        #                 "ascent": send.ascent_type
-        #             }
-        #             for send in selected_sends if send.grade == grade
-        #         ]
-        #      }
-        #     for grade in grade_list[::-1]
-        #     if any(send.grade == grade for send in selected_sends)
-        # ]
 
-        return render_template('index.html', sends=selected_sends, layers=outer_list, form=form)
-        # return '<h1>Style: {}, Grade: {}</h1>'.format(form.climbing_style.data, grade.grade)
+        return render_template('index.html', sends=selected_sends, layers=outer_list, form=form, add_form=add_form)
 
-    return render_template("index.html", sends=all_sends, form=form, highest_boulder=highest_boulder_grade)
+    return render_template("index.html", sends=all_sends, form=form, add_form=add_form, highest_boulder=highest_boulder_grade)
 
 @app.route("/grades/<style>")
 def climbing_grades(style):

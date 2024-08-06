@@ -12,11 +12,17 @@
 </head>
 <body>
 
-   <div id="myModal" class="modal">
+  <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
+            <form method="POST">
             <h2>Modal Title</h2>
-            <p>This is a sample modal.</p>
+            <p>{{ add_form.climb_name }}</p>
+            <p>{{ add_form.grade }}</p>
+            <p>{{ add_form.ascent }}</p>
+            <p>{{ add_form.style }}</p>
+            <p>{{ add_form.angle }}</p>
+                 </form>
         </div>
     </div>
    <button class="custom-fab" id="openModalBtn">+</button>
@@ -39,24 +45,30 @@
         let grade_select = document.getElementById('grade');
 
         style_select.onchange = function() {
-            style = style_select.value;
+    let style = style_select.value;
 
-            fetch('/grades/' + style).then(function(response) {
-                response.json().then(function(data) {
-                let optionHTML = '';
+    fetch('/grades/' + style)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.grades) {
+                throw new Error('Data structure is incorrect');
+            }
 
-                for (let grade of data.grades) {
-                    optionHTML +=  '<option value ="' + grade.id + '">' + grade.grade + '</option>';
-                }
-
-                grade_select.innerHTML = optionHTML;
-
-                });
-
-            });
-
-         }
-
+            let optionHTML = '';
+            for (let grade of data.grades) {
+                optionHTML += `<option value="${grade.id}">${grade.grade}</option>`;
+            }
+            grade_select.innerHTML = optionHTML;
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+};
          // script.js
 // Get the modal
 var modal = document.getElementById("myModal");
