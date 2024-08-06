@@ -126,7 +126,7 @@ def home():
                           Grade.query.filter_by(grade_style=form.climbing_style.data).all()]
 
     # select all records from the database for specific user.
-    all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
+    # all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
 
     #find highest bouldering grade
     highest_boulder = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
@@ -172,7 +172,7 @@ def home():
 
         return render_template('index.html', sends=selected_sends, layers=outer_list, form=form, add_form=add_form)
 
-    return render_template("index.html", sends=all_sends, form=form, add_form=add_form, highest_boulder=highest_boulder_grade)
+    return render_template("index.html", form=form, add_form=add_form, highest_boulder=highest_boulder_grade)
 
 @app.route("/grades/<style>")
 def climbing_grades(style):
