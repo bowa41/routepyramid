@@ -137,7 +137,7 @@ def home():
         highest_boulder_grade = grade.grade
 
     # On submit, search for the selected grade and filter
-    if request.method == 'POST':
+    if form.validate_on_submit:
         grade = Grade.query.filter_by(grade_id=form.grade.data).first()
         grade_list = [grade.grade for grade in
                           Grade.query.filter_by(grade_style=form.climbing_style.data)
@@ -163,6 +163,12 @@ def home():
            if len(inner_list) > 0:
                outer_list.append({"grade":grade, "climbs": inner_list})
 
+        if add_form.validate_on_submit():
+            print(add_form.climb_name.data)
+            print(add_form.grade.data)
+            print(add_form.ascent.data)
+            print(add_form.style.data)
+            print(add_form.angle.data)
 
         return render_template('index.html', sends=selected_sends, layers=outer_list, form=form, add_form=add_form)
 
