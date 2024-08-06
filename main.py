@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, redirect, url_for
 from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -27,7 +27,7 @@ font_awesome = FontAwesome(app)
 
 # Sends TABLE Configuration
 class Sends(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False)
     date: Mapped[str] = mapped_column(String(20), nullable=False)
     year:  Mapped[str] = mapped_column(String(4), nullable=False)
@@ -108,6 +108,45 @@ class AddForm(FlaskForm):
 
     # send_date = SelectField("Choose your option", choices=(date_list), default=[str(datetime.now().year)])
 
+def write_data(add_form):
+    # Add new send to db
+    new_send = Sends(user_id="1",
+                     date="2024/08/06",
+                     year="2024",
+                     route_name=add_form.climb_name.data,
+                     ascent_type=add_form.ascent.data,
+                     grade=db.session.query(Grade).filter(Grade.grade_id == add_form.grade.data).first().grade,
+                     angle=add_form.angle.data,
+                     style=add_form.style.data)
+    db.session.add(new_send)
+    db.session.commit()
+def read_data(form):
+    grade = Grade.query.filter_by(grade_id=form.grade.data).first()
+    grade_list = [grade.grade for grade in
+                  Grade.query.filter_by(grade_style=form.climbing_style.data)
+                  .where(Grade.grade_id <= grade.grade_id).all()]
+    slice_grade_list = grade_list[-int(form.pyramid_levels.data):]
+
+    # Construct a query to select from the database. Returns the rows in the database
+    result = db.session.execute(db.select(Sends).where(Sends.grade.in_(slice_grade_list))
+                                .where(Sends.style.in_(form.style.data))
+                                .where(Sends.angle.in_(form.angle.data))
+                                .where(Sends.year.in_(form.year.data)).order_by("date"))
+
+    # Use .scalars() to get the elements rather than entire rows from the database
+    selected_sends = result.scalars().all()
+
+    outer_list = []
+
+    for grade in grade_list[::-1]:
+        inner_list = []
+        for send in selected_sends:
+            if send.grade == grade:
+                inner_list.append({"name": send.route_name, "date": send.date, "ascent": send.ascent_type})
+        if len(inner_list) > 0:
+            outer_list.append({"grade": grade, "climbs": inner_list})
+    return outer_list
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     form = FilterForm()
@@ -136,41 +175,18 @@ def home():
         send, grade = highest_boulder
         highest_boulder_grade = grade.grade
 
+    if add_form.validate_on_submit():
+        write_data(add_form)
+        print(form.grade.data)
+        # output = read_data(form)
+        return redirect(url_for('home'))
+        # return render_template('index.html', form=form, add_form=add_form)
+
     # On submit, search for the selected grade and filter
     if form.validate_on_submit:
-        grade = Grade.query.filter_by(grade_id=form.grade.data).first()
-        grade_list = [grade.grade for grade in
-                          Grade.query.filter_by(grade_style=form.climbing_style.data)
-                          .where(Grade.grade_id <= grade.grade_id).all()]
-        slice_grade_list = grade_list[-int(form.pyramid_levels.data):]
+        output = read_data(form)
 
-        # Construct a query to select from the database. Returns the rows in the database
-        result = db.session.execute(db.select(Sends).where(Sends.grade.in_(slice_grade_list))
-                                                    .where(Sends.style.in_(form.style.data))
-                                                    .where(Sends.angle.in_(form.angle.data))
-                                                    .where(Sends.year.in_(form.year.data)).order_by("date"))
-
-        # Use .scalars() to get the elements rather than entire rows from the database
-        selected_sends = result.scalars().all()
-
-        outer_list = []
-
-        for grade in grade_list[::-1]:
-           inner_list = []
-           for send in selected_sends:
-               if send.grade == grade:
-                   inner_list.append({"name":send.route_name, "date":send.date, "ascent":send.ascent_type})
-           if len(inner_list) > 0:
-               outer_list.append({"grade":grade, "climbs": inner_list})
-
-        if add_form.validate_on_submit():
-            print(add_form.climb_name.data)
-            print(add_form.grade.data)
-            print(add_form.ascent.data)
-            print(add_form.style.data)
-            print(add_form.angle.data)
-
-        return render_template('index.html', sends=selected_sends, layers=outer_list, form=form, add_form=add_form)
+        return render_template('index.html', layers=output, form=form, add_form=add_form)
 
     return render_template("index.html", form=form, add_form=add_form, highest_boulder=highest_boulder_grade)
 
