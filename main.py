@@ -155,8 +155,6 @@ def home():
         return render_template('index.html', sends=selected_sends, layers=outer_list, form=form)
         # return '<h1>Style: {}, Grade: {}</h1>'.format(form.climbing_style.data, grade.grade)
 
-    return render_template("index.html", sends=all_sends, form=form,
-                           highest_boulder=highest_boulder_grade, highest_route=highest_route_grade)
 
 @app.route("/grades/<style>")
 def climbing_grades(style):
@@ -168,6 +166,19 @@ def climbing_grades(style):
         grade_list.append(gradeobj)
     return jsonify({"grades" : grade_list})
 
+# Endpoint to process data from JavaScript
+@app.route('/process_data', methods=['POST'])
+def process_data():
+    climbing_style = request.form.get('climbing_style')
+    grade = request.form.get('grade')
+    if climbing_style == "boulder":
+    # Process data (e.g., store in database, perform calculations)
+    # Here, we'll simply echo back a response
+        highest_boulder_grade = grade
+    else:
+        highest_route_grade = grade
+
+    return render_template('index.html', )
 
 if __name__ == '__main__':
     app.run(debug=True)

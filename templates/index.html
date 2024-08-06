@@ -23,7 +23,7 @@
  <div  class="content">
      <div id='filters'>
          Jordan's Pyramid
-         <form method="POST" id="climbingForm">
+         <form method="POST">
     {{ form.csrf_token }}
     {{ form.climbing_style }}
     {{ form.grade }}
@@ -31,75 +31,55 @@
     {{ form.style }}
     {{ form.angle }}
     {{ form.year }}
-             <input type="hidden" id="last_boulder_input" name="last_boulder" value="{{ highest_boulder }}">
-             <input type="hidden" id="last_route_input" name="last_route" value="{{ highest_route }}">
-    <input type="submit">
+    This is my highest bouldering grade: {{highest_boulder}}
+    <input type="submit" id="submitBtn">
     </form>
      <script>
+        let style_select = document.getElementById('climbing_style');
+        let grade_select = document.getElementById('grade');
 
-         document.addEventListener('DOMContentLoaded', (event) => {
-            let style_select = document.getElementById('climbing_style');
-            let grade_select = document.getElementById('grade');
-            let last_boulder_input = document.getElementById('last_boulder_input');
-            let last_route_input = document.getElementById('last_route_input');
+        style_select.onchange = function() {
+            style = style_select.value;
 
-            // Ensure the highest_boulder and highest_route values are properly escaped and converted to strings
-            let last_boulder = last_boulder_input.value;
-            let last_route = last_route_input.value;
+            fetch('/grades/' + style).then(function(response) {
+                response.json().then(function(data) {
+                let optionHTML = '';
 
-            // Function to set the correct grade value on page load
-            function setInitialGrade() {
-                let currentStyle = style_select.value;
-                if (currentStyle === 'boulder' && last_boulder) {
-                    grade_select.value = last_boulder;
-                } else if (currentStyle === 'route' && last_route) {
-                    grade_select.value = last_route;
-                }
-            }
-
-            // Set initial grade on page load
-            setInitialGrade();
-
-            style_select.onchange = function() {
-                let currentStyle = style_select.value;
-
-                // Store the current grade value based on the current style
-                if (currentStyle === 'boulder') {
-                    last_route = grade_select.value;
-                    last_route_input.value = last_route; // Update hidden input
-                } else {
-                    last_boulder = grade_select.value;
-                    last_boulder_input.value = last_boulder; // Update hidden input
+                for (let grade of data.grades) {
+                    optionHTML +=  '<option value ="' + grade.id + '">' + grade.grade + '</option>';
                 }
 
-                fetch('/grades/' + currentStyle).then(function(response) {
-                    response.json().then(function(data) {
-                        let optionHTML = '';
+                grade_select.innerHTML = optionHTML;
 
-                        for (let grade of data.grades) {
-                            optionHTML += '<option value="' + grade.id + '">' + grade.grade + '</option>';
-                        }
-
-                        grade_select.innerHTML = optionHTML;
-
-                        // Set the grade_select value to the last stored value for the selected style
-                        setInitialGrade();
-                    });
                 });
-            };
 
-            // Update hidden inputs before form submission
-            document.getElementById('climbingForm').onsubmit = function(e) {
+            });
 
-                e.preventDefault();
+         }
 
-                let currentStyle = style_select.value;
-                if (currentStyle === 'boulder') {
-                    last_boulder_input.value = grade_select.value;
-                } else {
-                    last_route_input.value = grade_select.value;
-                }
-            };
+         document.getElementById('submitBtn').addEventListener('click', function() {
+            var climbing_style = document.getElementById('climbing_style').value;
+            var grade = document.getElementById('grade').value;
+
+            // Create a FormData object and append data
+            var formData = new FormData();
+            formData.append('climbing_style', climbing_style);
+            formData.append('grade', grade);
+
+            // Send POST request to Flask endpoint
+            fetch('/process_data', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response from Flask:', data);
+                document.getElementById('result').innerHTML = `Received: ${data.message}`;
+            })
+            .catch(error => {
+                console.error('Error sending data to Flask:', error);
+                document.getElementById('result').innerHTML = 'Error occurred.';
+            });
         });
 
          // script.js
