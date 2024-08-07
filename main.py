@@ -7,7 +7,7 @@ from wtforms import SelectField, StringField, DateField
 from flask_font_awesome import FontAwesome
 from wtforms.fields.choices import SelectMultipleField
 from wtforms.validators import DataRequired
-from datetime import datetime
+from datetime import datetime, date
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
@@ -85,11 +85,10 @@ class AddForm(FlaskForm):
     # add_form = SubmitField('Add')
     climb_name = StringField("Climb Name", render_kw={"placeholder": "Climb Name"})
 
-    date = DateField(
+    send_date = DateField(
         'Date',
-        format='%Y/%m/%d',
-        validators=[DataRequired()],
-        render_kw={"placeholder": "YYYY/MM/DD"}
+        default=date.today(),
+        validators=[DataRequired()]
     )
 
     grade = SelectField("Grade", choices=[ ("1", "v1"), ("2", "v2"), ("3", "v3"),("4", "v4"),
@@ -119,8 +118,8 @@ class AddForm(FlaskForm):
 def write_data(add_form):
     # Add new send to db
     new_send = Sends(user_id="1",
-                     date="2024/08/06",
-                     year="2024",
+                     date=add_form.send_date.data.strftime("%Y/%m/%d"),
+                     year=str(add_form.send_date.data)[:4],
                      route_name=add_form.climb_name.data,
                      ascent_type=add_form.ascent.data,
                      grade=db.session.query(Grade).filter(Grade.grade_id == add_form.grade.data).first().grade,
