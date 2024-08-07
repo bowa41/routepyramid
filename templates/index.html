@@ -14,9 +14,11 @@
 
   <div id="myModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <div class="flex-btn">
+                <h2>Modal Title</h2>
+                <span class="close">&times;</span>
+            </div>
             <form method="POST">
-            <h2>Modal Title</h2>
             {% for items in add_form %}
              {{items}}
              {%endfor%}

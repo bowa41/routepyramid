@@ -3,9 +3,10 @@ from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from flask_wtf import FlaskForm
-from wtforms import SelectField, StringField
+from wtforms import SelectField, StringField, DateField
 from flask_font_awesome import FontAwesome
 from wtforms.fields.choices import SelectMultipleField
+from wtforms.validators import DataRequired
 from datetime import datetime
 
 app = Flask(__name__)
@@ -83,6 +84,13 @@ class FilterForm(FlaskForm):
 class AddForm(FlaskForm):
     # add_form = SubmitField('Add')
     climb_name = StringField("Climb Name", render_kw={"placeholder": "Climb Name"})
+
+    date = DateField(
+        'Date',
+        format='%Y/%m/%d',
+        validators=[DataRequired()],
+        render_kw={"placeholder": "YYYY/MM/DD"}
+    )
 
     grade = SelectField("Grade", choices=[ ("1", "v1"), ("2", "v2"), ("3", "v3"),("4", "v4"),
         ("5", "v5"), ("6", "v6"),  ("7", "v7"), ("8", "v8"), ("9", "v9"), ("10", "v10"), ("11", "v11"), ("12", "v12"),

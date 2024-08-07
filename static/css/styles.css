@@ -200,6 +200,7 @@ svg {
     float: right;
     font-size: 28px;
     font-weight: bold;
+    transform: translate(0px, -5px);
 }
 
 .close:hover,
@@ -207,4 +208,21 @@ svg {
     color: black;
     text-decoration: none;
     cursor: pointer;
+}
+
+.modal-content form {
+    padding-left: 20%;
+    padding-right: 20%;
+}
+
+.flex-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-top: -10px;
+}
+
+.flex-btn h2 {
+    margin: 0px;
+    margin-bottom: 24px;
 }
