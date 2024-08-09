@@ -11,19 +11,7 @@
 <div class="box">
   <h1>Login</h1>
   <!-- TODO: Use Message Flashing to display feedback to the user with a <p> -->
-  <p>{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <p>{{ message }}</p>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
 
-  {% if error %}
-    <p class=error><strong>Error:</strong> {{ error }}
-  {% endif %}
   <form action="{{ url_for('login') }}" method="post">
     <input type="text" name="email" placeholder="Email" required="required" />
     <input
@@ -36,5 +24,19 @@
       Let me in.
     </button>
   </form>
+
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+  {% if error %}
+  <p class=error><strong>Error:</strong> {{ error }} </p>
+  {% endif %}
 </div>
 
