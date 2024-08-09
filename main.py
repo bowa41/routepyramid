@@ -144,7 +144,7 @@ class AddForm(FlaskForm):
 def write_data(add_form):
     # Add new send to db
     new_send = Sends(user_id=current_user.id,
-                     date=add_form.send_date.data.strftime("%Y/%m/%d"),
+                     date=add_form.send_date.data.strftime("%m/%d/%Y"),
                      year=str(add_form.send_date.data)[:4],
                      route_name=add_form.climb_name.data,
                      ascent_type=add_form.ascent.data,
