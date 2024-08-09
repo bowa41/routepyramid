@@ -174,6 +174,9 @@ def load_user(user_id):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+
     return render_template("index.html")
 
 @app.route("/home", methods=["GET", "POST"])
@@ -231,6 +234,9 @@ def climbing_grades(style):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+
     if request.method == "POST":
         email = request.form.get('email')
         password = request.form.get('password')
@@ -264,6 +270,8 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
 
     if request.method == "POST":
         email = request.form.get('email')
@@ -280,7 +288,7 @@ def login():
             flash('Password incorrect, please try again.')
             return redirect(url_for('login'))
         else:
-            login_user(user)
+            login_user(user, remember=True)
             return redirect(url_for("home"))
 
 
