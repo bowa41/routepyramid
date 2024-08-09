@@ -240,12 +240,17 @@ svg {
 }
 
 .box a {
-  text-decoration: none;
-}
-
-.a_btn {
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 7px 20px;
+    display: block;
     width: 200px;
+    height: 250x;
+    text-decoration: none;
+    /* background: #4E9CAF; */
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    /* color: white; */
+    color: black;
+    font-weight: bold;
+    /* line-height: 25px; */
 }
