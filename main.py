@@ -1,7 +1,6 @@
 import werkzeug
 import os
 from dotenv import load_dotenv
-from peewee import DoesNotExist
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_from_directory
 from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
