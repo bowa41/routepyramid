@@ -192,25 +192,31 @@ def home():
     # set filter for first time load
     if not form.climbing_style.data:
         form.climbing_style.data = "route"
-        highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                         .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
-        send, grade = highest_route
-        form.grade.data = str(grade.grade_id)
+        db_results = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                      .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).first())
+        if db_results:
+            highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                             .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
+            send, grade = highest_route
+            form.grade.data = str(grade.grade_id)
+            print("True")
+        else:
+            form.grade.data = "30"
 
     # get all grades for the selected climbing style
     form.grade.choices = [(grade.grade_id, grade.grade) for grade in
                           Grade.query.filter_by(grade_style=form.climbing_style.data).all()]
 
-    # select all records from the database for specific user.
-    # all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
 
     #find highest bouldering grade
-    highest_boulder = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                             .filter(Grade.grade_style == 'boulder'  and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
-
-    if highest_boulder:
+    if (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                      .filter(Grade.grade_style == 'boulder' and Sends.user_id == current_user.id).first()):
+        highest_boulder = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                             .filter(Grade.grade_style == 'boulder' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
         send, grade = highest_boulder
         highest_boulder_grade = grade.grade
+    else:
+        highest_boulder_grade = "v0"
 
     if add_form.validate_on_submit():
         write_data(add_form)
