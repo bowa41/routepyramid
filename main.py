@@ -1,4 +1,6 @@
 import werkzeug
+import os
+from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_from_directory
 from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
@@ -12,9 +14,10 @@ from datetime import datetime, date
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
+load_dotenv("C:/Users/Jordan/PycharmProjects/routepyramid/.env")
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
-app.config['SECRET_KEY'] = 'secret'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///routepyramid.db")
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 
 # CREATE DB
 class Base(DeclarativeBase):
@@ -300,4 +303,4 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
