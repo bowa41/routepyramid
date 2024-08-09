@@ -1,6 +1,7 @@
 import werkzeug
 import os
 from dotenv import load_dotenv
+from peewee import DoesNotExist
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_from_directory
 from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
@@ -55,6 +56,17 @@ class Grade(db.Model):
     grade_style: Mapped[str] = mapped_column(String(20), nullable=False)
     grade: Mapped[str] = mapped_column(String(20), nullable=False)
 
+class Angle(db.Model):
+    angle_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    angle: Mapped[str] = mapped_column(String(20), nullable=False)
+
+class Ascent_type(db.Model):
+    ascent_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ascent_type: Mapped[str] = mapped_column(String(20), nullable=False)
+
+class Style(db.Model):
+    style_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    style: Mapped[str] = mapped_column(String(20), nullable=False)
 
 #create user table
 class User(UserMixin, db.Model):
@@ -175,10 +187,13 @@ def read_data(form):
 def load_user(user_id):
     return db.get_or_404(User, user_id)
 
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if current_user.is_authenticated:
         return redirect(url_for("home"))
+
 
     return render_template("index.html")
 
@@ -297,7 +312,7 @@ def login():
             flash('Password incorrect, please try again.')
             return redirect(url_for('login'))
         else:
-            login_user(user, remember=True)
+            login_user(user, remember=False)
             return redirect(url_for("home"))
 
 
