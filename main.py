@@ -88,8 +88,9 @@ class FilterForm(FlaskForm):
     grade = SelectField("Grade", choices=[])
 
     pyramid_levels = SelectField("Levels",
-                                 choices=[("1","1"), ("2","2"),("3","3"),("4","4"),("5","5"), ("6","6")],
-                                 default="6")
+                                 choices=[("1","1"), ("2","2"),("3","3"),("4","4"),("5","5"),
+                                          ("6","6"), ("7","7"), ("8","8"), ("9","9"), ("10","10")],
+                                 default="8")
 
     style_list = ["Compression","Pockets","Crimps","Jugs","Incuts","Jam","Pinch","Slopers","Tufa"]
     style = SelectMultipleField("Choose your option",
@@ -207,13 +208,15 @@ def home():
     if not form.climbing_style.data:
         form.climbing_style.data = "route"
         db_results = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                      .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).first())
+                      .filter(Grade.grade_style == 'route', Sends.user_id == current_user.id).first())
         if db_results:
             highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                             .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
+                             .filter(Grade.grade_style == 'route', Sends.user_id == current_user.id)
+                             .order_by(Grade.grade.desc()).first())
             send, grade = highest_route
             form.grade.data = str(grade.grade_id)
-            print("True")
+            print(grade.grade_id)
+
         else:
             form.grade.data = "30"
 
