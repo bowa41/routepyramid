@@ -139,7 +139,6 @@ class AddForm(FlaskForm):
                                 choices=[("Slab","Slab"), ("Vertical","Vertical"),
                                         ("Overhang","Overhang"), ("Roof","Roof")], render_kw={"id": "submit_angle"})
 
-    # send_date = SelectField("Choose your option", choices=(date_list), default=[str(datetime.now().year)])
 
 def write_data(add_form):
     # Add new send to db
@@ -155,6 +154,7 @@ def write_data(add_form):
     db.session.commit()
 def read_data(form):
     grade = Grade.query.filter_by(grade_id=form.grade.data).first()
+
     grade_list = [grade.grade for grade in
                   Grade.query.filter_by(grade_style=form.climbing_style.data)
                   .where(Grade.grade_id <= grade.grade_id).all()]
@@ -162,30 +162,32 @@ def read_data(form):
 
     # Construct a query to select from the database. Returns the rows in the database
     result = db.session.execute(db.select(Sends).where(Sends.grade.in_(slice_grade_list))
-                                .where(Sends.user_id == current_user.id)
+                                .where((Sends.user_id) == (current_user.id))
                                 .where(Sends.style.in_(form.style.data))
                                 .where(Sends.angle.in_(form.angle.data))
-                                .where(Sends.year.in_(form.year.data)).order_by("date"))
+                                .where(Sends.year.in_(form.year.data))
+                                .order_by("date"))
 
     # Use .scalars() to get the elements rather than entire rows from the database
     selected_sends = result.scalars().all()
-
     outer_list = []
 
     for grade in grade_list[::-1]:
+
         inner_list = []
         for send in selected_sends:
+
             if send.grade == grade:
                 inner_list.append({"name": send.route_name, "date": send.date, "ascent": send.ascent_type})
         if len(inner_list) > 0:
             outer_list.append({"grade": grade, "climbs": inner_list})
+
     return outer_list
 
 # Create a user_loader callback
 @login_manager.user_loader
 def load_user(user_id):
     return db.get_or_404(User, user_id)
-
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -213,7 +215,7 @@ def home():
                              .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
             send, grade = highest_route
             form.grade.data = str(grade.grade_id)
-            print("True")
+
         else:
             form.grade.data = "30"
 
