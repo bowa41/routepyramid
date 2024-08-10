@@ -1,16 +1,23 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+import werkzeug
+import os
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_from_directory
 from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from flask_wtf import FlaskForm
-from wtforms import SelectField, StringField
+from wtforms import SelectField, StringField, DateField
 from flask_font_awesome import FontAwesome
 from wtforms.fields.choices import SelectMultipleField
-from datetime import datetime
+from wtforms.validators import DataRequired
+from datetime import datetime, date
+from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
+load_dotenv("C:/Users/Jordan/PycharmProjects/routepyramid/.env")
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///routepyramid.db'
-app.config['SECRET_KEY'] = 'secret'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///routepyramid.db")
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 
 # CREATE DB
 class Base(DeclarativeBase):
@@ -21,8 +28,10 @@ db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 font_awesome = FontAwesome(app)
 
+# Configure Flask-Login's Login Manager
+login_manager = LoginManager()
+login_manager.init_app(app)
 
-#Create Flask Filters
 
 
 # Sends TABLE Configuration
@@ -46,6 +55,24 @@ class Grade(db.Model):
     grade_style: Mapped[str] = mapped_column(String(20), nullable=False)
     grade: Mapped[str] = mapped_column(String(20), nullable=False)
 
+class Angle(db.Model):
+    angle_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    angle: Mapped[str] = mapped_column(String(20), nullable=False)
+
+class Ascent_type(db.Model):
+    ascent_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    ascent_type: Mapped[str] = mapped_column(String(20), nullable=False)
+
+class Style(db.Model):
+    style_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    style: Mapped[str] = mapped_column(String(20), nullable=False)
+
+#create user table
+class User(UserMixin, db.Model):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(100), unique=True)
+    password: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(1000))
 
 with app.app_context():
     db.create_all()
@@ -84,6 +111,12 @@ class AddForm(FlaskForm):
     # add_form = SubmitField('Add')
     climb_name = StringField("Climb Name", render_kw={"placeholder": "Climb Name"})
 
+    send_date = DateField(
+        'Date',
+        default=date.today(),
+        validators=[DataRequired()]
+    )
+
     grade = SelectField("Grade", choices=[ ("1", "v1"), ("2", "v2"), ("3", "v3"),("4", "v4"),
         ("5", "v5"), ("6", "v6"),  ("7", "v7"), ("8", "v8"), ("9", "v9"), ("10", "v10"), ("11", "v11"), ("12", "v12"),
         ("13", "v13"), ("14", "v14"), ("15", "v15"), ("16", "v16"), ("17", "v17"),("18", "5.10a"), ("19", "5.10b"),
@@ -110,9 +143,9 @@ class AddForm(FlaskForm):
 
 def write_data(add_form):
     # Add new send to db
-    new_send = Sends(user_id="1",
-                     date="2024/08/06",
-                     year="2024",
+    new_send = Sends(user_id=current_user.id,
+                     date=add_form.send_date.data.strftime("%Y-%m-%d"),
+                     year=str(add_form.send_date.data)[:4],
                      route_name=add_form.climb_name.data,
                      ascent_type=add_form.ascent.data,
                      grade=db.session.query(Grade).filter(Grade.grade_id == add_form.grade.data).first().grade,
@@ -129,6 +162,7 @@ def read_data(form):
 
     # Construct a query to select from the database. Returns the rows in the database
     result = db.session.execute(db.select(Sends).where(Sends.grade.in_(slice_grade_list))
+                                .where(Sends.user_id == current_user.id)
                                 .where(Sends.style.in_(form.style.data))
                                 .where(Sends.angle.in_(form.angle.data))
                                 .where(Sends.year.in_(form.year.data)).order_by("date"))
@@ -147,33 +181,56 @@ def read_data(form):
             outer_list.append({"grade": grade, "climbs": inner_list})
     return outer_list
 
+# Create a user_loader callback
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
+
+
+
 @app.route("/", methods=["GET", "POST"])
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+
+
+    return render_template("index.html")
+
+@app.route("/home", methods=["GET", "POST"])
+@login_required
 def home():
     form = FilterForm()
     add_form = AddForm()
 
+
     # set filter for first time load
     if not form.climbing_style.data:
         form.climbing_style.data = "route"
-        highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                         .filter(Grade.grade_style == 'route').order_by(Grade.grade.desc()).first())
-        send, grade = highest_route
-        form.grade.data = str(grade.grade_id)
+        db_results = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                      .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).first())
+        if db_results:
+            highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                             .filter(Grade.grade_style == 'route' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
+            send, grade = highest_route
+            form.grade.data = str(grade.grade_id)
+            print("True")
+        else:
+            form.grade.data = "30"
 
     # get all grades for the selected climbing style
     form.grade.choices = [(grade.grade_id, grade.grade) for grade in
                           Grade.query.filter_by(grade_style=form.climbing_style.data).all()]
 
-    # select all records from the database for specific user.
-    # all_sends = db.session.execute(db.select(Sends).order_by("date")).scalars().all()
 
     #find highest bouldering grade
-    highest_boulder = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                             .filter(Grade.grade_style == 'boulder').order_by(Grade.grade.desc()).first())
-
-    if highest_boulder:
+    if (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                      .filter(Grade.grade_style == 'boulder' and Sends.user_id == current_user.id).first()):
+        highest_boulder = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                             .filter(Grade.grade_style == 'boulder' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
         send, grade = highest_boulder
         highest_boulder_grade = grade.grade
+    else:
+        highest_boulder_grade = "v0"
 
     if add_form.validate_on_submit():
         write_data(add_form)
@@ -183,11 +240,12 @@ def home():
     if form.validate_on_submit:
         output = read_data(form)
 
-        return render_template('index.html', layers=output, form=form, add_form=add_form)
+        return render_template('home.html', layers=output, form=form, add_form=add_form, current_user=current_user.name)
 
-    return render_template("index.html", form=form, add_form=add_form, highest_boulder=highest_boulder_grade)
+    return render_template("home.html", form=form, add_form=add_form, highest_boulder=highest_boulder_grade,current_user=current_user.name)
 
 @app.route("/grades/<style>")
+@login_required
 def climbing_grades(style):
     grades = Grade.query.filter_by(grade_style=style).all()
     grade_list = []
@@ -197,6 +255,72 @@ def climbing_grades(style):
         grade_list.append(gradeobj)
     return jsonify({"grades" : grade_list})
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Find user by email entered.
+        result = db.session.execute(db.select(User).where(User.email == email))
+        user = result.scalar()
+
+        if user:
+            flash("You've already signed up with that email, log in instead!")
+            return redirect(url_for("login"))
+
+        # Hashing and salting the password entered by the user
+        new_user = User(name = request.form.get("name"),
+                     email = email,
+                    password = generate_password_hash(password,
+                                                      method='pbkdf2:sha256',
+                                                      salt_length=8)
+                    )
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Log in and authenticate user after adding details to database.
+        login_user(new_user)
+
+        # Can redirect() and get name from the current_user
+        return redirect(url_for("home"))
+
+    return render_template("register.html", logged_in=current_user.is_authenticated)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Find user by email entered.
+        result = db.session.execute(db.select(User).where(User.email == email))
+        user = result.scalar()
+
+        # Check stored password hash against entered password hashed.
+        if not user:
+            flash("That email does not exist, please try again.")
+        elif not check_password_hash(user.password, password):
+            flash('Password incorrect, please try again.')
+            return redirect(url_for('login'))
+        else:
+            login_user(user, remember=False)
+            return redirect(url_for("home"))
+
+
+    return render_template("login.html", logged_in=current_user.is_authenticated)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
