@@ -30,4 +30,4 @@ RUN chmod 600 /app/myec2key.pem
 EXPOSE 5000
 
 # Command to run the Flask application using Gunicorn
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "main:app"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:80", "main:app"]

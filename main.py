@@ -18,8 +18,6 @@ import psycopg2
 from sshtunnel import SSHTunnelForwarder
 import pymysql
 
-# load_dotenv("C:/Users/Jordan/PycharmProjects/routepyramid/.env")
-
 user = os.getenv('USERID')
 password = os.getenv('PASSWORD')
 # host = os.getenv('HOST')
