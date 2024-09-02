@@ -1,36 +1,23 @@
+# Use the official Python base image
 FROM python:3.9-slim
 
-RUN apt-get -q -y update
-RUN apt-get install -y gcc
+# Set environment variables to avoid buffering of logs
+ENV PYTHONUNBUFFERED=1
 
-ENV USERNAME=pyramid_user
-ENV WORKING_DIR=/
+# Set the working directory in the container
+WORKDIR /app
 
+# Copy the requirements file to the working directory
+COPY requirements.txt /app/
 
-WORKDIR ${WORKING_DIR}
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /
-COPY requirements.txt .
-COPY service_entrypoint.sh .
+# Copy the rest of the application code to the working directory
+COPY . /app/
 
-RUN groupadd ${USERNAME} && \
-    useradd -g ${USERNAME} ${USERNAME}
-
-RUN chown -R ${USERNAME}:${USERNAME} ${WORKING_DIR}
-RUN chmod -R u=rwx,g=rwx ${WORKING_DIR}
-
-
-USER ${USERNAME}
-ENV PATH "$PATH:/home/${USERNAME}/.local/bin"
-
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-ENV FLASK_APP=best_app
-RUN chmod +x service_entrypoint.sh
-
+# Expose port 5000 for the Flask application
 EXPOSE 5000
 
-RUN flask db init
-
-ENTRYPOINT [ "./service_entrypoint.sh" ]
+# Command to run the Flask application
+CMD ["python", "app.py"]
