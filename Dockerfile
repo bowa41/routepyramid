@@ -23,6 +23,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code to the working directory
 COPY . /app/
 
+# Copy the .pem file to the working directory
+COPY /myec2key.pem /app/myec2key.pem
+
+# Set permissions on the .pem file if necessary
+RUN chmod 600 /app/myec2key.pem
+
 # Expose port 5000 for the Flask application
 EXPOSE 5000
 
