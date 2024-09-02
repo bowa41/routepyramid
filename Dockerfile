@@ -27,7 +27,7 @@ COPY . /app/
 RUN chmod 600 /app/myec2key.pem
 
 # Expose port 5000 for the Flask application
-EXPOSE 5000
+EXPOSE 80
 
 # Command to run the Flask application using Gunicorn
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:80", "main:app"]
