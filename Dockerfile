@@ -1,5 +1,5 @@
 # Use the official Python base image
-FROM python:3.9-slim
+FROM python:3.12
 
 # Set environment variables to avoid buffering of logs
 ENV PYTHONUNBUFFERED=1
@@ -10,7 +10,7 @@ WORKDIR /app
 # Install libpq-dev and any other necessary build tools
 # Update package lists and install the package, then clean up
 RUN apt-get update && \
-    apt-get install -y libpq-dev && \
+    apt-get install -y build-essential libpq-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
