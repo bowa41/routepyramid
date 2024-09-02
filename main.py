@@ -18,25 +18,25 @@ import psycopg2
 from sshtunnel import SSHTunnelForwarder
 import pymysql
 
-load_dotenv("C:/Users/Jordan/PycharmProjects/routepyramid/.env")
+# load_dotenv("C:/Users/Jordan/PycharmProjects/routepyramid/.env")
 
-user = os.environ.get('USERID')
-password = os.environ.get('PASSWORD')
-host = 'routepyramid.cbcgckmumb6w.us-east-2.rds.amazonaws.com'
+user = os.getenv('USERID')
+password = os.getenv('PASSWORD')
+host = os.getenv('HOST')
 port = '5432'
 database = 'route_pyramid'
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
+app.config['SECRET_KEY'] = os.getenv('FLASK_KEY')
 
 
 # SQLAlchemy engine
 
 forwarding_server = SSHTunnelForwarder(
     ('ec2-3-19-123-56.us-east-2.compute.amazonaws.com', 22),  # Remote server IP and SSH port
-    ssh_username="ec2-user",
-    ssh_pkey="/Users/Jordan/Downloads/myec2key.pem",
-    remote_bind_address=('routepyramid.cbcgckmumb6w.us-east-2.rds.amazonaws.com', 5432)
+    ssh_username=os.getenv('ssh_username'),
+    ssh_pkey=os.getenv('ssh_pkey'),
+    remote_bind_address=({host}, 5432)
     )
 
 forwarding_server.start()
