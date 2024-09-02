@@ -22,7 +22,7 @@ import pymysql
 
 user = os.getenv('USERID')
 password = os.getenv('PASSWORD')
-host = os.getenv('HOST')
+# host = os.getenv('HOST')
 port = '5432'
 database = 'route_pyramid'
 
@@ -35,7 +35,7 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_KEY')
 forwarding_server = SSHTunnelForwarder(
     ('ec2-3-19-123-56.us-east-2.compute.amazonaws.com', 22),  # Remote server IP and SSH port
     ssh_username=os.getenv('ssh_username'),
-    ssh_pkey=os.getenv('ssh_pkey'),
+    ssh_pkey='/myec2key.pem',
     remote_bind_address=(os.getenv('HOST'), 5432)
     )
 
