@@ -216,7 +216,7 @@ def load_user(user_id):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    print("test1")
+    print("test2")
     if current_user.is_authenticated:
         return redirect(url_for("home"))
 
