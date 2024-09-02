@@ -44,12 +44,12 @@ print("server connected")
 local_port = forwarding_server.local_bind_port
 connection_str = f'postgresql://{user}:{password}@localhost:{local_port}/{database}'
 app.config['SQLALCHEMY_DATABASE_URI'] = connection_str
-print("test1")
+
 # CREATE DB
 class Base(DeclarativeBase):
     pass
 # Connect to Database
-print("test2")
+
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 font_awesome = FontAwesome(app)
@@ -58,7 +58,7 @@ font_awesome = FontAwesome(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-print("test3")
+
 # Sends TABLE Configuration
 class Sends(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -351,4 +351,5 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
+    print("test")
     app.run(debug=False)
