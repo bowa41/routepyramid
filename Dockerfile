@@ -9,7 +9,7 @@ ENV WORKING_DIR=/
 
 WORKDIR ${WORKING_DIR}
 
-COPY routepyramid routepyramid
+COPY . /
 COPY requirements.txt .
 COPY service_entrypoint.sh .
 
