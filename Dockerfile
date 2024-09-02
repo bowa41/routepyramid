@@ -5,7 +5,7 @@ FROM python:3.12
 ENV PYTHONUNBUFFERED=1
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /
 
 # Install libpq-dev and any other necessary build tools
 # Update package lists and install the package, then clean up
@@ -15,16 +15,16 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file to the working directory
-COPY requirements.txt /app/
+COPY requirements.txt /
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code to the working directory
-COPY . /app/
+COPY . /
 
 # Set permissions on the .pem file if necessary
-RUN chmod 600 /app/myec2key.pem
+RUN chmod 600 /myec2key.pem
 
 # Expose port 80 for the Flask application
 EXPOSE 80
