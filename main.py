@@ -2,9 +2,10 @@ import werkzeug
 import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_from_directory
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, create_engine
+from sqlalchemy.sql import text
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, DateField
 from flask_font_awesome import FontAwesome
@@ -13,12 +14,38 @@ from wtforms.validators import DataRequired
 from datetime import datetime, date
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+import psycopg2
+from sshtunnel import SSHTunnelForwarder
+import pymysql
 
 load_dotenv("C:/Users/Jordan/PycharmProjects/routepyramid/.env")
+
+user = os.environ.get('USERID')
+password = os.environ.get('PASSWORD')
+host = 'routepyramid.cbcgckmumb6w.us-east-2.rds.amazonaws.com'
+port = '5432'
+database = 'route_pyramid'
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///routepyramid.db")
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://{master username}:{db password}@{endpoint}/{db instance name}'
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
+
+
+# SQLAlchemy engine
+
+forwarding_server = SSHTunnelForwarder(
+    ('ec2-3-19-123-56.us-east-2.compute.amazonaws.com', 22),  # Remote server IP and SSH port
+    ssh_username="ec2-user",
+    ssh_pkey="/Users/Jordan/Downloads/myec2key.pem",
+    remote_bind_address=('routepyramid.cbcgckmumb6w.us-east-2.rds.amazonaws.com', 5432)
+    )
+
+forwarding_server.start()
+print("server connected")
+
+# connect to PostgreSQL
+local_port = forwarding_server.local_bind_port
+connection_str = f'postgresql://{user}:{password}@localhost:{local_port}/{database}'
+app.config['SQLALCHEMY_DATABASE_URI'] = connection_str
 
 # CREATE DB
 class Base(DeclarativeBase):
