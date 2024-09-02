@@ -216,6 +216,7 @@ def load_user(user_id):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    print("test1")
     if current_user.is_authenticated:
         return redirect(url_for("home"))
 
@@ -350,6 +351,6 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+print("test1")
 if __name__ == '__main__':
-    print("test")
-    app.run(host='0.0.0.0', port=80)
+    app.run()
