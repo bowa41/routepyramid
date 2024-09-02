@@ -16,8 +16,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv("C:/Users/Jordan/PycharmProjects/routepyramid/.env")
 app = Flask(__name__)
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///routepyramid.db")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{master username}:{db password}@{endpoint}/{db instance name}'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///routepyramid.db")
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://{master username}:{db password}@{endpoint}/{db instance name}'
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 
 # CREATE DB
