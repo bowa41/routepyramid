@@ -17,6 +17,7 @@ from sshtunnel import SSHTunnelForwarder
 import pymysql
 
 user = os.environ.get('USERID')
+print(user)
 password = os.environ.get('PASSWORD')
 # host = os.environ.get('HOST')
 port = '5432'
