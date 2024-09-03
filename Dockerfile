@@ -32,4 +32,5 @@ RUN chmod 600 /myec2key.pem
 EXPOSE 80
 
 # Command to run the Flask application using Gunicorn
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:80", "main:app"]
+ENTRYPOINT ["gunicorn", "-b", "0.0.0.0:80", "main:app"]
+#CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:80", "main:app"]
