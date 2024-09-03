@@ -1,9 +1,7 @@
 import werkzeug
 import os
-from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, send_from_directory
-from sqlalchemy import Integer, String, create_engine
-from sqlalchemy.sql import text
+from sqlalchemy import Integer, String
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from flask_wtf import FlaskForm
@@ -351,6 +349,6 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-print("test1")
+
 if __name__ == '__main__':
     app.run()
