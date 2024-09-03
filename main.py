@@ -17,7 +17,6 @@ from sshtunnel import SSHTunnelForwarder
 import pymysql
 
 user = os.environ.get('USERID')
-print(user)
 password = os.environ.get('PASSWORD')
 # host = os.environ.get('HOST')
 port = '5432'
@@ -27,8 +26,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 
 
-# SQLAlchemy engine
-print(os.environ.get('SSH_PKEY'))
+# Create SSH Tunnel
 forwarding_server = SSHTunnelForwarder(
     ('ec2-3-19-123-56.us-east-2.compute.amazonaws.com', 22),  # Remote server IP and SSH port
     ssh_username=os.environ.get('ssh_username'),
