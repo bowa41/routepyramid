@@ -23,14 +23,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code to the working directory
 COPY . /
 
-COPY awskeypair.pem /
+COPY myec2key.pem /
 
 ENV FLASK_APP=app
 
 # Set permissions on the .pem file if necessary
-RUN chmod 600 /awskeypair.pem
+RUN chmod 600 /myec2key.pem
 
-# Expose port 80 for the Flask application
+# Expose port 8000 for the Flask application
 EXPOSE 8000
 
 # Command to run the Flask application using Gunicorn
