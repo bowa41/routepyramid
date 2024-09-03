@@ -28,7 +28,7 @@ COPY awskeypair.pem /
 ENV FLASK_APP=app
 
 # Set permissions on the .pem file if necessary
-RUN chmod 600 /awskeypair.pem'
+RUN chmod 600 /awskeypair.pem
 
 # Expose port 80 for the Flask application
 EXPOSE 8000
