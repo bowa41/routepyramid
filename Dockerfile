@@ -23,6 +23,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code to the working directory
 COPY . /
 
+ENV FLASK_APP=app
+
 # Set permissions on the .pem file if necessary
 RUN chmod 600 /myec2key.pem
 
