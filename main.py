@@ -213,7 +213,6 @@ def load_user(user_id):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    print("test2")
     if current_user.is_authenticated:
         return redirect(url_for("home"))
 
@@ -238,7 +237,6 @@ def home():
                              .order_by(Grade.grade.desc()).first())
             send, grade = highest_route
             form.grade.data = str(grade.grade_id)
-            print(grade.grade_id)
 
         else:
             form.grade.data = "30"
