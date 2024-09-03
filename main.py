@@ -27,7 +27,7 @@ app.config['SECRET_KEY'] = os.getenv('FLASK_KEY')
 
 
 # SQLAlchemy engine
-
+print(os.getenv('SSH_PKEY'))
 forwarding_server = SSHTunnelForwarder(
     ('ec2-3-19-123-56.us-east-2.compute.amazonaws.com', 22),  # Remote server IP and SSH port
     ssh_username=os.getenv('ssh_username'),
