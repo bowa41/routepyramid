@@ -30,7 +30,7 @@ app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 forwarding_server = SSHTunnelForwarder(
     ('ec2-3-19-123-56.us-east-2.compute.amazonaws.com', 22),  # Remote server IP and SSH port
     ssh_username=os.environ.get('ssh_username'),
-    ssh_pkey=os.environ.get('SSHTUNNEL_KEY'),
+    ssh_pkey='/awskeypair.pem',
     remote_bind_address=(os.environ.get('HOST'), 5432)
     )
 
