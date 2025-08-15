@@ -16,7 +16,7 @@ import psycopg2
 from sshtunnel import SSHTunnelForwarder
 import pymysql
 
-user = os.environ.get('USERID')
+user = 'postgres'
 password = 'jadynrocks'
 # host = os.environ.get('HOST')
 port = '5432'
