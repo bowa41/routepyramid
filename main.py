@@ -26,19 +26,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 
 print(user)
-# Create SSH Tunnel
-forwarding_server = SSHTunnelForwarder(
-    ('ec2-3-19-123-56.us-east-2.compute.amazonaws.com', 22),  # Remote server IP and SSH port
-    ssh_username='ec2-user',
-    ssh_pkey='/myec2key.pem',
-    remote_bind_address=('routepyramid.cbcgckmumb6w.us-east-2.rds.amazonaws.com', 5432)
-    )
+host = 'localhost'
+port = 5432  # your local postgres port
 
-forwarding_server.start()
-print("server connected")
-
-# connect to PostgreSQL
-local_port = forwarding_server.local_bind_port
 connection_str = f'postgresql://{user}:{password}@localhost:{local_port}/{database}'
 app.config['SQLALCHEMY_DATABASE_URI'] = connection_str
 
