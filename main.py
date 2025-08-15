@@ -29,7 +29,7 @@ print(user)
 host = 'localhost'
 port = 5432  # your local postgres port
 
-connection_str = f'postgresql://{user}:{password}@localhost:{local_port}/{database}'
+connection_str = f'postgresql://{user}:{password}@localhost:{port}/{database}'
 app.config['SQLALCHEMY_DATABASE_URI'] = connection_str
 
 # CREATE DB
