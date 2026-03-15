@@ -19,6 +19,7 @@
                 <span class="close">&times;</span>
             </div>
             <form method="POST">
+            <input type="hidden" name="view_user_id" value="{{ view_user_id }}">
             {% for items in add_form %}
              {{items}}
              {%endfor%}
@@ -67,6 +68,12 @@
         <button type="button" id="show-all-btn" onclick="showAll()">Show All</button>
         <button type="button" id="show-current-btn" onclick="showCurrentYear()">Current Year</button>
     </div>
+    <label>Search Routes</label>
+    <div id="route-search-container">
+        <input type="text" id="route-search" placeholder="Type to search...">
+        <div id="route-search-dropdown"></div>
+        <div id="route-search-tags"></div>
+    </div>
     </form>
      <script>
         // --- Modal ---
@@ -77,6 +84,19 @@
         btn.onclick = function() { modal.style.display = "block"; }
         span.onclick = function() { modal.style.display = "none"; }
         window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
+
+        document.querySelector('#myModal form').addEventListener('submit', function() {
+            this.querySelectorAll('.filter-copy').forEach(el => el.remove());
+            const params = getFilterParams();
+            for (const [key, value] of params.entries()) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                input.className = 'filter-copy';
+                this.appendChild(input);
+            }
+        });
         {% endif %}
 
         // --- Helpers ---
@@ -104,7 +124,7 @@
             return layers.map(layer => `
                 <div class="layer">
                     <div class="blocks">
-                        <div class="block blocks-no-border">${escHtml(layer.grade)}</div>
+                        <div class="block blocks-no-border">${escHtml(layer.grade)}<div class="grade-count">${layer.climbs.length}</div></div>
                         <div class="all-blocks">
                             ${layer.climbs.map(climb => `
                                 <div class="block ${escHtml(climb.ascent)} y${escHtml(climb.date.slice(0,4))}"
@@ -112,7 +132,9 @@
                                     <strong>${escHtml(climb.name)}</strong>
                                     <span class="block-date">${escHtml(climb.date)}</span>
                                     <div class="icon-container">
-                                        <i class="fas ${climb.ascent === 'Redpoint' ? 'fa-circle' : 'fa-bolt'}"></i>
+                                        ${climb.ascent === 'Redpoint'
+                                            ? '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="red"/></svg>'
+                                            : '<svg viewBox="0 0 24 24" width="14" height="14"><polygon points="13,2 4,14 11,14 11,22 20,10 13,10" fill="white"/></svg>'}
                                     </div>
                                 </div>`).join('')}
                         </div>
@@ -179,6 +201,7 @@
                         }));
                     }
                 });
+            applyHighlights();
             }, leaving.length > 0 ? 150 : 0);
         }
 
@@ -242,8 +265,73 @@
             updatePyramid();
         }
 
-        function switchUser(userId) {
-            document.getElementById('view_user_id').value = userId;
+        // --- Route Search ---
+        const selectedRoutes = new Set();
+
+        function getRouteNames() {
+            const names = new Set();
+            document.querySelectorAll('#pyramid .block[data-key]').forEach(el => {
+                names.add(el.dataset.key.split('|')[0]);
+            });
+            return [...names].sort();
+        }
+
+        function applyHighlights() {
+            document.querySelectorAll('#pyramid .block[data-key]').forEach(el => {
+                const name = el.dataset.key.split('|')[0];
+                el.classList.toggle('highlighted', selectedRoutes.has(name));
+            });
+            document.getElementById('pyramid').classList.toggle('has-highlights', selectedRoutes.size > 0);
+        }
+
+        function renderTags() {
+            const tags = document.getElementById('route-search-tags');
+            tags.innerHTML = [...selectedRoutes].map(name =>
+                `<span class="route-tag">${escHtml(name)}<button class="tag-remove" data-route="${escHtml(name)}">×</button></span>`
+            ).join('');
+        }
+
+        function renderDropdown(query) {
+            const dropdown = document.getElementById('route-search-dropdown');
+            if (!query) { dropdown.style.display = 'none'; return; }
+            const matches = getRouteNames().filter(n => n.toLowerCase().includes(query.toLowerCase()));
+            if (!matches.length) { dropdown.style.display = 'none'; return; }
+            dropdown.innerHTML = matches.map(name =>
+                `<div class="route-option ${selectedRoutes.has(name) ? 'selected' : ''}" data-route="${escHtml(name)}">${escHtml(name)}</div>`
+            ).join('');
+            dropdown.style.display = 'block';
+        }
+
+        function toggleRoute(name) {
+            selectedRoutes.has(name) ? selectedRoutes.delete(name) : selectedRoutes.add(name);
+            applyHighlights();
+            renderTags();
+            renderDropdown(document.getElementById('route-search').value);
+        }
+
+        document.getElementById('route-search').addEventListener('input', function() {
+            renderDropdown(this.value);
+        });
+
+        document.getElementById('route-search-dropdown').addEventListener('click', function(e) {
+            const opt = e.target.closest('.route-option');
+            if (opt) { toggleRoute(opt.dataset.route); document.getElementById('route-search').value = ''; renderDropdown(''); }
+        });
+
+        document.getElementById('route-search-tags').addEventListener('click', function(e) {
+            const btn = e.target.closest('.tag-remove');
+            if (btn) toggleRoute(btn.dataset.route);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#route-search-container')) {
+                document.getElementById('route-search-dropdown').style.display = 'none';
+            }
+        });
+
+        async function switchUser(userId) {
+            document.querySelectorAll('[name="view_user_id"]').forEach(el => el.value = userId);
+            await updateHighestGrade();
             updatePyramid();
         }
      </script>
@@ -254,7 +342,7 @@
 <div class="layer">
   <div class="blocks">
 
-    <div class="block blocks-no-border">{{layer["grade"]}}</div>
+    <div class="block blocks-no-border">{{layer["grade"]}}<div class="grade-count">{{ layer["climbs"]|length }}</div></div>
      <div class="all-blocks">
     {% for climb in layer["climbs"] %}
     <div class="block {{climb.ascent}} y{{climb.date[:4]}}" data-key="{{ (climb.name ~ '|' ~ layer['grade']) | e }}">
@@ -262,9 +350,9 @@
         <span class="block-date">{{ climb.date }}</span>
           <div class='icon-container'>
             {% if climb.ascent == "Redpoint" %}
-                <i class="fas fa-circle"></i>
+                <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="red"/></svg>
             {% else %}
-                <i class="fas fa-bolt"></i>
+                <svg viewBox="0 0 24 24" width="14" height="14"><polygon points="13,2 4,14 11,14 11,22 20,10 13,10" fill="white"/></svg>
             {% endif %}
               </div>
              </div>

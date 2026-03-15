@@ -91,6 +91,11 @@ GUEST_EMAIL = 'guest@routepyramid.com'
 with app.app_context():
     db.create_all()
 
+    # Ensure v0 exists in Grade table
+    if not Grade.query.filter_by(grade='v0', grade_style='boulder').first():
+        db.session.add(Grade(grade_id=0, grade='v0', grade_style='boulder'))
+        db.session.commit()
+
     # Create guest user if it doesn't exist
     guest = db.session.execute(db.select(User).where(User.email == GUEST_EMAIL)).scalar()
     if not guest:
@@ -138,7 +143,7 @@ class AddForm(FlaskForm):
         validators=[DataRequired()]
     )
 
-    grade = SelectField("Grade", choices=[ ("1", "v1"), ("2", "v2"), ("3", "v3"),("4", "v4"),
+    grade = SelectField("Grade", choices=[ ("0", "v0"), ("1", "v1"), ("2", "v2"), ("3", "v3"),("4", "v4"),
         ("5", "v5"), ("6", "v6"),  ("7", "v7"), ("8", "v8"), ("9", "v9"), ("10", "v10"), ("11", "v11"), ("12", "v12"),
         ("13", "v13"), ("14", "v14"), ("15", "v15"), ("16", "v16"), ("17", "v17"),("18", "5.10a"), ("19", "5.10b"),
         ("20", "5.10c"), ("21", "5.10d"), ("22", "5.11a"), ("23", "5.11b"), ("24", "5.11c"),("25", "5.11d"), ("26", "5.12a"),
@@ -162,9 +167,9 @@ class AddForm(FlaskForm):
 
     # send_date = SelectField("Choose your option", choices=(date_list), default=[str(datetime.now().year)])
 
-def write_data(add_form):
+def write_data(add_form, user_id):
     # Add new send to db
-    new_send = Sends(user_id=current_user.id,
+    new_send = Sends(user_id=user_id,
                      date=add_form.send_date.data.strftime("%Y-%m-%d"),
                      year=str(add_form.send_date.data)[:4],
                      route_name=add_form.climb_name.data,
@@ -178,7 +183,7 @@ def read_data(form, user_id, grade_id):
     grade = Grade.query.filter_by(grade_id=grade_id).first()
     grade_list = [grade.grade for grade in
                   Grade.query.filter_by(grade_style=form.climbing_style.data)
-                  .where(Grade.grade_id <= grade.grade_id).all()]
+                  .where(Grade.grade_id <= grade.grade_id).order_by(Grade.grade_id).all()]
     slice_grade_list = grade_list[-int(form.pyramid_levels.data):]
 
     # Construct a query to select from the database. Returns the rows in the database
@@ -250,11 +255,22 @@ def home():
             view_user_name = all_users[0].name
 
     # set filter for first time load
+    # Pre-populate form from query args (after add-send redirect)
+    if request.args.get('climbing_style'):
+        form.climbing_style.data = request.args.get('climbing_style')
+        form.pyramid_levels.data = request.args.get('pyramid_levels', '8')
+        if request.args.getlist('year'):
+            form.year.data = request.args.getlist('year')
+        if request.args.getlist('style'):
+            form.style.data = request.args.getlist('style')
+        if request.args.getlist('angle'):
+            form.angle.data = request.args.getlist('angle')
+
     if not form.climbing_style.data:
         form.climbing_style.data = "route"
 
     year_filter = form.year.data or [str(datetime.now().year)]
-    grade_id = request.form.get('grade')
+    grade_id = request.form.get('grade') or request.args.get('grade')
     if not grade_id:
         highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
                          .filter(Grade.grade_style == form.climbing_style.data,
@@ -275,8 +291,18 @@ def home():
         highest_boulder_grade = "v0"
 
     if add_form.validate_on_submit():
-        write_data(add_form)
-        return redirect(url_for('home'))
+        target_user_id = view_user_id if is_admin else current_user.id
+        write_data(add_form, target_user_id)
+        added_grade = Grade.query.filter_by(grade_id=add_form.grade.data).first()
+        added_style = added_grade.grade_style if added_grade else request.form.get('climbing_style', 'route')
+        return redirect(url_for('home',
+            view_user_id=target_user_id,
+            climbing_style=added_style,
+            pyramid_levels=request.form.get('pyramid_levels', '8'),
+            year=request.form.getlist('year'),
+            style=request.form.getlist('style'),
+            angle=request.form.getlist('angle')
+        ))
 
     # On submit, search for the selected grade and filter
     if form.validate_on_submit:
@@ -343,7 +369,7 @@ def api_pyramid():
         return jsonify([])
 
     grade_list = [g.grade for g in Grade.query.filter_by(grade_style=climbing_style)
-                  .where(Grade.grade_id <= grade.grade_id).all()]
+                  .where(Grade.grade_id <= grade.grade_id).order_by(Grade.grade_id).all()]
     slice_grade_list = grade_list[-int(pyramid_levels):]
 
     if not styles:
