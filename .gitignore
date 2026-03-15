@@ -1,3 +1,28 @@
 /instance/
 data.csv
 route_pyramid.bat
+
+# Private keys
+*.pem
+awskeypair.pem
+myec2key.pem
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Binaries
+*.exe
+ngrok.exe
+
+# Claude local settings
+.claude/
+
+# DB dumps
+*.dump
+route_pyramid.dump
+
+# Virtual environment
+.venv/
+venv/
