@@ -65,15 +65,7 @@ h1.centered {
   border: solid 3px black;
 }
 
-.fa-circle {
-  color: red !important;
-  font-size: 12px;
-}
 
-.fa-bolt {
-  color: white;
-  font-size: 12px;
-}
 
 .layer {
   width: 100%;
@@ -198,6 +190,107 @@ select#year {
   font-family: 'Poppins';
   font-size: 11px;
   cursor: pointer;
+}
+
+#route-search-container {
+  position: relative;
+}
+
+#route-search {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Poppins';
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+#route-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+  z-index: 100;
+}
+
+.route-option {
+  padding: 6px 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.route-option:hover { background: #f0f0f0; }
+.route-option.selected { background: #fff9c4; }
+
+#route-search-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.route-tag {
+  background: #fff9c4;
+  border: 1px solid #e6c200;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: #666;
+}
+
+.blocks-no-border {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.grade-count {
+    background: black;
+    color: white;
+    border-radius: 15px;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 4px 7px 2px 7px;
+    margin-top: -3px !important;
+}
+
+#pyramid.has-highlights .block[data-key] {
+  filter: brightness(0.5);
+  transition: filter 0.2s;
+}
+
+#pyramid.has-highlights .block[data-key].highlighted {
+  filter: brightness(1.1);
+  box-shadow: 0 0 0 3px #333, 0 6px 20px rgba(0,0,0,0.4);
+  transform: scale(1.04);
+  z-index: 10;
+  position: relative;
+  transition: filter 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .year-pill {
