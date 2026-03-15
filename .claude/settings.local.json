@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python main.py)",
+      "Bash(pip install:*)",
+      "Bash(python -c \"import waitress; print\\(''ok''\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5000)",
+      "Bash(curl -s http://localhost:5000)"
+    ]
+  }
+}

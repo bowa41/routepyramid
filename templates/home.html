@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Route Pyramid</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    {{ font_awesome.load_js() }}
+    {{ fontawesome_html() }}
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
@@ -12,85 +12,328 @@
 </head>
 <body>
 
-  <div id="myModal" class="modal">
+  {% if not is_guest %}<div id="myModal" class="modal">
         <div class="modal-content">
             <div class="flex-btn">
                 <h2>Add a Send</h2>
                 <span class="close">&times;</span>
             </div>
             <form method="POST">
+            <input type="hidden" name="view_user_id" value="{{ view_user_id }}">
             {% for items in add_form %}
              {{items}}
              {%endfor%}
     <input type="submit" value="Submit" id="Add">
                  </form>
         </div>
-    </div>
-   <button class="custom-fab" id="openModalBtn">+</button>
+    </div>{% endif %}
+   {% if not is_guest %}<button class="custom-fab" id="openModalBtn">+</button>{% endif %}
+   <a href="{{ url_for('logout') }}" class="custom-fab logout-fab">↩</a>
  <div  class="content">
      <div id='filters'>
+         {% if is_admin or is_guest %}
+         <span id="user-switcher-wrapper">
+           <select id="user-switcher" onchange="switchUser(this.value)">
+               {% for u in all_users %}
+               <option value="{{ u.id }}" {% if u.id == view_user_id %}selected{% endif %}>{{ u.name }}</option>
+               {% endfor %}
+           </select>
+         </span>'s Pyramid
+         {% else %}
          {{current_user}}'s Pyramid
-         <form method="POST">
-{% for items in form %}
-             {{items}}
-             {%endfor%}
-    <input type="submit" value="Search for Sends" id="Search">
+         {% endif %}
+         <form method="POST" id="filter-form">
+            {{ form.hidden_tag() }}
+            <label>Climbing Style</label>
+            {{ form.climbing_style }}
+            <label>Pyramid Levels</label>
+            {{ form.pyramid_levels }}
+            <label>Hold Type</label>
+            {{ form.style }}
+            <label>Angle</label>
+            {{ form.angle }}
+            <label>Year</label>
+            {{ form.year }}
+            <div id="year-pills">
+              {% for value, label in form.year.choices %}
+              <button type="button" class="year-pill y{{ value }}" data-year="{{ value }}"
+                data-active="{{ 'true' if value in form.year.data else 'false' }}"
+                onclick="toggleYear('{{ value }}')">{{ label }}</button>
+              {% endfor %}
+            </div>
+    <input type="hidden" name="grade" id="grade" value="{{ grade_id }}">
+    <input type="hidden" name="view_user_id" id="view_user_id" value="{{ view_user_id }}">
+    <input type="submit" value="Search for Sends" id="Search" style="display:none">
+    <div id="filter-btns">
+        <button type="button" id="show-all-btn" onclick="showAll()">Show All</button>
+        <button type="button" id="show-current-btn" onclick="showCurrentYear()">Current Year</button>
+    </div>
+    <label>Search Routes</label>
+    <div id="route-search-container">
+        <input type="text" id="route-search" placeholder="Type to search...">
+        <div id="route-search-dropdown"></div>
+        <div id="route-search-tags"></div>
+    </div>
     </form>
      <script>
-        let style_select = document.getElementById('climbing_style');
-        let grade_select = document.getElementById('grade');
+        // --- Modal ---
+        {% if not is_guest %}
+        var modal = document.getElementById("myModal");
+        var btn = document.getElementById("openModalBtn");
+        var span = document.getElementsByClassName("close")[0];
+        btn.onclick = function() { modal.style.display = "block"; }
+        span.onclick = function() { modal.style.display = "none"; }
+        window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
 
-        style_select.onchange = function() {
-    let style = style_select.value;
-
-    fetch('/grades/' + style)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
+        document.querySelector('#myModal form').addEventListener('submit', function() {
+            this.querySelectorAll('.filter-copy').forEach(el => el.remove());
+            const params = getFilterParams();
+            for (const [key, value] of params.entries()) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                input.className = 'filter-copy';
+                this.appendChild(input);
             }
-            return response.json();
-        })
-        .then(data => {
-            if (!data.grades) {
-                throw new Error('Data structure is incorrect');
-            }
-
-            let optionHTML = '';
-            for (let grade of data.grades) {
-                optionHTML += `<option value="${grade.id}">${grade.grade}</option>`;
-            }
-            grade_select.innerHTML = optionHTML;
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
         });
-};
-         // script.js
-// Get the modal
-var modal = document.getElementById("myModal");
+        {% endif %}
 
-// Get the button that opens the modal
-var btn = document.getElementById("openModalBtn");
+        // --- Helpers ---
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
 
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
+        function getFilterParams() {
+            const form = document.getElementById('filter-form');
+            const data = new URLSearchParams();
+            ['climbing_style', 'grade', 'pyramid_levels'].forEach(name => {
+                const el = form.querySelector(`[name="${name}"]`);
+                if (el) data.append(name, el.value);
+            });
+            ['style', 'angle', 'year'].forEach(name => {
+                const el = form.querySelector(`[name="${name}"]`);
+                if (el) Array.from(el.selectedOptions).forEach(opt => data.append(name, opt.value));
+            });
+            const viewUserId = document.getElementById('view_user_id');
+            if (viewUserId) data.append('view_user_id', viewUserId.value);
+            return data;
+        }
 
-// When the user clicks the button, open the modal
-btn.onclick = function() {
-    modal.style.display = "block";
-}
+        function renderPyramid(layers) {
+            return layers.map(layer => `
+                <div class="layer">
+                    <div class="blocks">
+                        <div class="block blocks-no-border">${escHtml(layer.grade)}<div class="grade-count">${layer.climbs.length}</div></div>
+                        <div class="all-blocks">
+                            ${layer.climbs.map(climb => `
+                                <div class="block ${escHtml(climb.ascent)} y${escHtml(climb.date.slice(0,4))}"
+                                     data-key="${escHtml(climb.name + '|' + layer.grade)}">
+                                    <strong>${escHtml(climb.name)}</strong>
+                                    <span class="block-date">${escHtml(climb.date)}</span>
+                                    <div class="icon-container">
+                                        ${climb.ascent === 'Redpoint'
+                                            ? '<svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="red"/></svg>'
+                                            : '<svg viewBox="0 0 24 24" width="14" height="14"><polygon points="13,2 4,14 11,14 11,22 20,10 13,10" fill="white"/></svg>'}
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
 
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-    modal.style.display = "none";
-}
+        async function updatePyramid() {
+            const pyramid = document.getElementById('pyramid');
 
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
+            // 1. Record current positions
+            const oldRects = {};
+            pyramid.querySelectorAll('.block[data-key]').forEach(el => {
+                oldRects[el.dataset.key] = el.getBoundingClientRect();
+            });
+
+            // 2. Fetch new data
+            const params = getFilterParams();
+            const response = await fetch('/api/pyramid?' + params.toString());
+            const layers = await response.json();
+
+            // 3. Keys in new result
+            const newKeys = new Set();
+            layers.forEach(layer => layer.climbs.forEach(climb => {
+                newKeys.add(climb.name + '|' + layer.grade);
+            }));
+
+            // 4. Fade out blocks leaving
+            const leaving = [];
+            pyramid.querySelectorAll('.block[data-key]').forEach(el => {
+                if (!newKeys.has(el.dataset.key)) {
+                    leaving.push(el);
+                    el.style.transition = 'opacity 0.15s ease';
+                    el.style.opacity = '0';
+                }
+            });
+
+            // 5. After fade-out, rebuild and animate
+            setTimeout(() => {
+                pyramid.innerHTML = renderPyramid(layers);
+
+                pyramid.querySelectorAll('.block[data-key]').forEach(el => {
+                    const key = el.dataset.key;
+                    if (oldRects[key]) {
+                        // Existing block — FLIP to new position
+                        const newRect = el.getBoundingClientRect();
+                        const dx = oldRects[key].left - newRect.left;
+                        const dy = oldRects[key].top - newRect.top;
+                        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+                            el.style.transform = `translate(${dx}px, ${dy}px)`;
+                            el.style.transition = 'none';
+                            requestAnimationFrame(() => requestAnimationFrame(() => {
+                                el.style.transition = 'transform 0.25s ease';
+                                el.style.transform = '';
+                            }));
+                        }
+                    } else {
+                        // New block — fade in
+                        el.style.opacity = '0';
+                        el.style.transition = 'none';
+                        requestAnimationFrame(() => requestAnimationFrame(() => {
+                            el.style.transition = 'opacity 0.25s ease';
+                            el.style.opacity = '1';
+                        }));
+                    }
+                });
+            applyHighlights();
+            }, leaving.length > 0 ? 150 : 0);
+        }
+
+        // --- Filter listeners ---
+        const style_select = document.getElementById('climbing_style');
+
+        async function updateHighestGrade() {
+            const params = getFilterParams();
+            const r = await fetch('/api/highest-grade?' + params.toString());
+            const data = await r.json();
+            if (data.grade_id !== null) {
+                document.getElementById('grade').value = data.grade_id;
+            }
+        }
+
+        style_select.onchange = async function() {
+            await updateHighestGrade();
+            updatePyramid();
+        };
+
+        document.getElementById('year').addEventListener('change', async function() {
+            await updateHighestGrade();
+            updatePyramid();
+        });
+
+        ['pyramid_levels', 'style', 'angle'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', updatePyramid);
+        });
+
+        async function toggleYear(year) {
+            const pill = document.querySelector(`.year-pill[data-year="${year}"]`);
+            const option = document.querySelector(`#year option[value="${year}"]`);
+            const isActive = pill.dataset.active === 'true';
+            pill.dataset.active = isActive ? 'false' : 'true';
+            option.selected = !isActive;
+            await updateHighestGrade();
+            updatePyramid();
+        }
+
+        async function showCurrentYear() {
+            const currentYear = new Date().getFullYear().toString();
+            Array.from(document.querySelector('#year').options).forEach(opt => {
+                opt.selected = opt.value === currentYear;
+            });
+            document.querySelectorAll('.year-pill').forEach(p => {
+                p.dataset.active = p.dataset.year === currentYear ? 'true' : 'false';
+            });
+            await updateHighestGrade();
+            updatePyramid();
+        }
+
+        async function showAll() {
+            ['style', 'angle'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) Array.from(el.options).forEach(opt => opt.selected = true);
+            });
+            Array.from(document.querySelector('#year').options).forEach(opt => opt.selected = true);
+            document.querySelectorAll('.year-pill').forEach(p => p.dataset.active = 'true');
+            await updateHighestGrade();
+            updatePyramid();
+        }
+
+        // --- Route Search ---
+        const selectedRoutes = new Set();
+
+        function getRouteNames() {
+            const names = new Set();
+            document.querySelectorAll('#pyramid .block[data-key]').forEach(el => {
+                names.add(el.dataset.key.split('|')[0]);
+            });
+            return [...names].sort();
+        }
+
+        function applyHighlights() {
+            document.querySelectorAll('#pyramid .block[data-key]').forEach(el => {
+                const name = el.dataset.key.split('|')[0];
+                el.classList.toggle('highlighted', selectedRoutes.has(name));
+            });
+            document.getElementById('pyramid').classList.toggle('has-highlights', selectedRoutes.size > 0);
+        }
+
+        function renderTags() {
+            const tags = document.getElementById('route-search-tags');
+            tags.innerHTML = [...selectedRoutes].map(name =>
+                `<span class="route-tag">${escHtml(name)}<button class="tag-remove" data-route="${escHtml(name)}">×</button></span>`
+            ).join('');
+        }
+
+        function renderDropdown(query) {
+            const dropdown = document.getElementById('route-search-dropdown');
+            if (!query) { dropdown.style.display = 'none'; return; }
+            const matches = getRouteNames().filter(n => n.toLowerCase().includes(query.toLowerCase()));
+            if (!matches.length) { dropdown.style.display = 'none'; return; }
+            dropdown.innerHTML = matches.map(name =>
+                `<div class="route-option ${selectedRoutes.has(name) ? 'selected' : ''}" data-route="${escHtml(name)}">${escHtml(name)}</div>`
+            ).join('');
+            dropdown.style.display = 'block';
+        }
+
+        function toggleRoute(name) {
+            selectedRoutes.has(name) ? selectedRoutes.delete(name) : selectedRoutes.add(name);
+            applyHighlights();
+            renderTags();
+            renderDropdown(document.getElementById('route-search').value);
+        }
+
+        document.getElementById('route-search').addEventListener('input', function() {
+            renderDropdown(this.value);
+        });
+
+        document.getElementById('route-search-dropdown').addEventListener('click', function(e) {
+            const opt = e.target.closest('.route-option');
+            if (opt) { toggleRoute(opt.dataset.route); document.getElementById('route-search').value = ''; renderDropdown(''); }
+        });
+
+        document.getElementById('route-search-tags').addEventListener('click', function(e) {
+            const btn = e.target.closest('.tag-remove');
+            if (btn) toggleRoute(btn.dataset.route);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#route-search-container')) {
+                document.getElementById('route-search-dropdown').style.display = 'none';
+            }
+        });
+
+        async function switchUser(userId) {
+            document.querySelectorAll('[name="view_user_id"]').forEach(el => el.value = userId);
+            await updateHighestGrade();
+            updatePyramid();
+        }
      </script>
      </div>
      <div id='pyramid'>
@@ -99,17 +342,17 @@ window.onclick = function(event) {
 <div class="layer">
   <div class="blocks">
 
-    <div class="block blocks-no-border">{{layer["grade"]}}</div>
+    <div class="block blocks-no-border">{{layer["grade"]}}<div class="grade-count">{{ layer["climbs"]|length }}</div></div>
      <div class="all-blocks">
     {% for climb in layer["climbs"] %}
-    <div class="block {{climb.ascent}} y{{climb.date[:4]}}">
+    <div class="block {{climb.ascent}} y{{climb.date[:4]}}" data-key="{{ (climb.name ~ '|' ~ layer['grade']) | e }}">
          <strong>{{ climb.name }}</strong>
         <span class="block-date">{{ climb.date }}</span>
           <div class='icon-container'>
             {% if climb.ascent == "Redpoint" %}
-                {{font_awesome.render_icon("fas fa-circle")}}
+                <svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="10" fill="red"/></svg>
             {% else %}
-                {{font_awesome.render_icon("fas fa-bolt")}}
+                <svg viewBox="0 0 24 24" width="14" height="14"><polygon points="13,2 4,14 11,14 11,22 20,10 13,10" fill="white"/></svg>
             {% endif %}
               </div>
              </div>

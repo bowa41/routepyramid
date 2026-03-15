@@ -1,7 +1,7 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    {{ font_awesome.load_js() }}
+    {{ fontawesome_html() }}
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
@@ -23,6 +23,8 @@
       Let me in.
     </button>
   </form>
+  <a href="{{ url_for('guest_login') }}" class="btn btn-secondary btn-block btn-large"
+  >Continue as Guest</a>
 
   {% with messages = get_flashed_messages() %}
   {% if messages %}
