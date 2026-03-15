@@ -50,28 +50,43 @@
             {{ form.hidden_tag() }}
             <label>Climbing Style</label>
             {{ form.climbing_style }}
+            <div class="style-toggle" id="style-toggle">
+              <button type="button" class="style-toggle-btn {% if form.climbing_style.data == 'route' %}active{% endif %}" data-value="route" onclick="switchClimbingStyle('route')">Routes</button>
+              <button type="button" class="style-toggle-btn {% if form.climbing_style.data == 'boulder' %}active{% endif %}" data-value="boulder" onclick="switchClimbingStyle('boulder')">Boulders</button>
+            </div>
             <label>Pyramid Levels</label>
             {{ form.pyramid_levels }}
-            <label>Hold Type</label>
+            <label class="label-with-action">Hold Type <a href="#" class="pill-show-all" onclick="clearPillFilter('style'); return false;">Show All</a></label>
             {{ form.style }}
-            <label>Angle</label>
+            <div id="style-pills" class="option-pills">
+              {% for value, label in form.style.choices %}
+              <button type="button" class="option-pill" data-select="style" data-value="{{ value }}"
+                data-active="{{ 'true' if (value in form.style.data and form.style.data|length < form.style.choices|length) else 'false' }}"
+                onclick="toggleOption('style', '{{ value }}', this)">{{ label }}</button>
+              {% endfor %}
+            </div>
+            <label class="label-with-action">Angle <a href="#" class="pill-show-all" onclick="clearPillFilter('angle'); return false;">Show All</a></label>
             {{ form.angle }}
-            <label>Year</label>
+            <div id="angle-pills" class="option-pills">
+              {% for value, label in form.angle.choices %}
+              <button type="button" class="option-pill" data-select="angle" data-value="{{ value }}"
+                data-active="{{ 'true' if (value in form.angle.data and form.angle.data|length < form.angle.choices|length) else 'false' }}"
+                onclick="toggleOption('angle', '{{ value }}', this)">{{ label }}</button>
+              {% endfor %}
+            </div>
+            <label class="label-with-action">Year <span class="pill-actions"><a href="#" class="pill-show-all" onclick="showCurrentYear(); return false;">Current Year</a> / <a href="#" class="pill-show-all" onclick="clearPillFilter('year'); return false;">Show All</a></span></label>
             {{ form.year }}
             <div id="year-pills">
               {% for value, label in form.year.choices %}
               <button type="button" class="year-pill y{{ value }}" data-year="{{ value }}"
-                data-active="{{ 'true' if value in form.year.data else 'false' }}"
+                data-select="year" data-value="{{ value }}"
+                data-active="{{ 'true' if (value in form.year.data and form.year.data|length < form.year.choices|length) else 'false' }}"
                 onclick="toggleYear('{{ value }}')">{{ label }}</button>
               {% endfor %}
             </div>
     <input type="hidden" name="grade" id="grade" value="{{ grade_id }}">
     <input type="hidden" name="view_user_id" id="view_user_id" value="{{ view_user_id }}">
     <input type="submit" value="Search for Sends" id="Search" style="display:none">
-    <div id="filter-btns">
-        <button type="button" id="show-all-btn" onclick="showAll()">Show All</button>
-        <button type="button" id="show-current-btn" onclick="showCurrentYear()">Current Year</button>
-    </div>
     <label>Search Routes</label>
     <div id="route-search-container">
         <input type="text" id="route-search" placeholder="Type to search...">
@@ -221,6 +236,15 @@
             }
         }
 
+        async function switchClimbingStyle(value) {
+            document.getElementById('climbing_style').value = value;
+            document.querySelectorAll('.style-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.value === value);
+            });
+            await updateHighestGrade();
+            updatePyramid();
+        }
+
         style_select.onchange = async function() {
             await updateHighestGrade();
             updatePyramid();
@@ -231,17 +255,39 @@
             updatePyramid();
         });
 
-        ['pyramid_levels', 'style', 'angle'].forEach(id => {
+        ['pyramid_levels'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('change', updatePyramid);
         });
 
+        function syncSelectFromPills(selectId) {
+            const select = document.getElementById(selectId);
+            const activePills = [...document.querySelectorAll(`[data-select="${selectId}"][data-active="true"]`)];
+            if (activePills.length === 0) {
+                Array.from(select.options).forEach(opt => opt.selected = true);
+            } else {
+                const activeValues = new Set(activePills.map(p => p.dataset.value));
+                Array.from(select.options).forEach(opt => opt.selected = activeValues.has(opt.value));
+            }
+        }
+
+        function toggleOption(selectId, value, btn) {
+            btn.dataset.active = btn.dataset.active === 'true' ? 'false' : 'true';
+            syncSelectFromPills(selectId);
+            updatePyramid();
+        }
+
+        async function clearPillFilter(selectId) {
+            document.querySelectorAll(`[data-select="${selectId}"]`).forEach(p => p.dataset.active = 'false');
+            syncSelectFromPills(selectId);
+            if (selectId === 'year') await updateHighestGrade();
+            updatePyramid();
+        }
+
         async function toggleYear(year) {
             const pill = document.querySelector(`.year-pill[data-year="${year}"]`);
-            const option = document.querySelector(`#year option[value="${year}"]`);
-            const isActive = pill.dataset.active === 'true';
-            pill.dataset.active = isActive ? 'false' : 'true';
-            option.selected = !isActive;
+            pill.dataset.active = pill.dataset.active === 'true' ? 'false' : 'true';
+            syncSelectFromPills('year');
             await updateHighestGrade();
             updatePyramid();
         }
@@ -259,9 +305,9 @@
         }
 
         async function showAll() {
-            ['style', 'angle'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) Array.from(el.options).forEach(opt => opt.selected = true);
+            ['style', 'angle', 'year'].forEach(id => {
+                document.querySelectorAll(`[data-select="${id}"]`).forEach(p => p.dataset.active = 'false');
+                syncSelectFromPills(id);
             });
             Array.from(document.querySelector('#year').options).forEach(opt => opt.selected = true);
             document.querySelectorAll('.year-pill').forEach(p => p.dataset.active = 'true');
