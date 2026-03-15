@@ -23,7 +23,7 @@ port = '5432'
 database = 'route_pyramid'
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
+app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY', 'dev-secret-key')
 
 print(user)
 host = 'localhost'
@@ -85,8 +85,19 @@ class User(UserMixin, db.Model):
     password: Mapped[str] = mapped_column(String(100))
     name: Mapped[str] = mapped_column(String(1000))
 
+ADMIN_EMAIL = 'bowa41@att.net'
+GUEST_EMAIL = 'guest@routepyramid.com'
+
 with app.app_context():
     db.create_all()
+
+    # Create guest user if it doesn't exist
+    guest = db.session.execute(db.select(User).where(User.email == GUEST_EMAIL)).scalar()
+    if not guest:
+        guest = User(name='Guest', email=GUEST_EMAIL,
+                     password=generate_password_hash('', method='pbkdf2:sha256', salt_length=8))
+        db.session.add(guest)
+        db.session.commit()
 
 # create date dropdown for Form
     date_list = [(year.year, year.year) for year in (db.session.query(Sends).order_by("year").distinct())]
@@ -95,8 +106,6 @@ with app.app_context():
 class FilterForm(FlaskForm):
     climbing_style = SelectField("Climbing Style",
                                  choices=[("route", "Route"), ("boulder", "Boulder")])
-
-    grade = SelectField("Grade", choices=[])
 
     pyramid_levels = SelectField("Levels",
                                  choices=[("1","1"), ("2","2"),("3","3"),("4","4"),("5","5"),
@@ -165,8 +174,8 @@ def write_data(add_form):
                      style=add_form.style.data)
     db.session.add(new_send)
     db.session.commit()
-def read_data(form):
-    grade = Grade.query.filter_by(grade_id=form.grade.data).first()
+def read_data(form, user_id, grade_id):
+    grade = Grade.query.filter_by(grade_id=grade_id).first()
     grade_list = [grade.grade for grade in
                   Grade.query.filter_by(grade_style=form.climbing_style.data)
                   .where(Grade.grade_id <= grade.grade_id).all()]
@@ -174,7 +183,7 @@ def read_data(form):
 
     # Construct a query to select from the database. Returns the rows in the database
     result = db.session.execute(db.select(Sends).where(Sends.grade.in_(slice_grade_list))
-                                .where(Sends.user_id == current_user.id)
+                                .where(Sends.user_id == user_id)
                                 .where(Sends.style.in_(form.style.data))
                                 .where(Sends.angle.in_(form.angle.data))
                                 .where(Sends.year.in_(form.year.data)).order_by("date"))
@@ -202,6 +211,12 @@ def load_user(user_id):
 
 
 
+@app.route("/guest-login")
+def guest_login():
+    guest = db.session.execute(db.select(User).where(User.email == GUEST_EMAIL)).scalar()
+    login_user(guest, remember=False)
+    return redirect(url_for("home"))
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if current_user.is_authenticated:
@@ -216,32 +231,44 @@ def home():
     form = FilterForm()
     add_form = AddForm()
 
+    is_admin = current_user.email == ADMIN_EMAIL
+    is_guest = current_user.email == GUEST_EMAIL
+    all_users = User.query.filter(User.email != GUEST_EMAIL).all() if (is_admin or is_guest) else []
+
+    # Determine which user's data to show
+    view_user_id = current_user.id
+    view_user_name = current_user.name
+    if is_admin or is_guest:
+        selected_id = request.form.get('view_user_id') or request.args.get('view_user_id')
+        if selected_id:
+            view_user_id = int(selected_id)
+            view_user = db.session.get(User, view_user_id)
+            if view_user:
+                view_user_name = view_user.name
+        elif is_guest and all_users:
+            view_user_id = all_users[0].id
+            view_user_name = all_users[0].name
 
     # set filter for first time load
     if not form.climbing_style.data:
         form.climbing_style.data = "route"
-        db_results = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                      .filter(Grade.grade_style == 'route', Sends.user_id == current_user.id).first())
-        if db_results:
-            highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                             .filter(Grade.grade_style == 'route', Sends.user_id == current_user.id)
-                             .order_by(Grade.grade.desc()).first())
-            send, grade = highest_route
-            form.grade.data = str(grade.grade_id)
 
-        else:
-            form.grade.data = "30"
-
-    # get all grades for the selected climbing style
-    form.grade.choices = [(grade.grade_id, grade.grade) for grade in
-                          Grade.query.filter_by(grade_style=form.climbing_style.data).all()]
+    year_filter = form.year.data or [str(datetime.now().year)]
+    grade_id = request.form.get('grade')
+    if not grade_id:
+        highest_route = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+                         .filter(Grade.grade_style == form.climbing_style.data,
+                                 Sends.user_id == view_user_id,
+                                 Sends.year.in_(year_filter))
+                         .order_by(Grade.grade_id.desc()).first())
+        grade_id = str(highest_route[1].grade_id) if highest_route else "30"
 
 
     #find highest bouldering grade
     if (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                      .filter(Grade.grade_style == 'boulder' and Sends.user_id == current_user.id).first()):
+                      .filter(Grade.grade_style == 'boulder' and Sends.user_id == view_user_id).first()):
         highest_boulder = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
-                             .filter(Grade.grade_style == 'boulder' and Sends.user_id == current_user.id).order_by(Grade.grade.desc()).first())
+                             .filter(Grade.grade_style == 'boulder' and Sends.user_id == view_user_id).order_by(Grade.grade.desc()).first())
         send, grade = highest_boulder
         highest_boulder_grade = grade.grade
     else:
@@ -253,11 +280,99 @@ def home():
 
     # On submit, search for the selected grade and filter
     if form.validate_on_submit:
-        output = read_data(form)
+        output = read_data(form, view_user_id, grade_id)
 
-        return render_template('home.html', layers=output, form=form, add_form=add_form, current_user=current_user.name)
+        return render_template('home.html', layers=output, form=form, add_form=add_form,
+                               current_user=view_user_name, is_admin=is_admin, is_guest=is_guest,
+                               all_users=all_users, view_user_id=view_user_id, grade_id=grade_id)
 
-    return render_template("home.html", form=form, add_form=add_form, highest_boulder=highest_boulder_grade,current_user=current_user.name)
+    return render_template("home.html", form=form, add_form=add_form, highest_boulder=highest_boulder_grade,
+                           current_user=view_user_name, is_admin=is_admin, is_guest=is_guest,
+                           all_users=all_users, view_user_id=view_user_id, grade_id=grade_id)
+
+@app.route("/api/highest-grade")
+@login_required
+def api_highest_grade():
+    climbing_style = request.args.get('climbing_style', 'route')
+    years = request.args.getlist('year') or [str(datetime.now().year)]
+
+    view_user_id = current_user.id
+    if current_user.email in (ADMIN_EMAIL, GUEST_EMAIL):
+        selected_id = request.args.get('view_user_id')
+        if selected_id:
+            view_user_id = int(selected_id)
+        elif current_user.email == GUEST_EMAIL:
+            first_user = User.query.filter(User.email != GUEST_EMAIL).first()
+            if first_user:
+                view_user_id = first_user.id
+
+    highest = (db.session.query(Sends, Grade).join(Grade, Sends.grade == Grade.grade)
+               .filter(Grade.grade_style == climbing_style, Sends.user_id == view_user_id,
+                       Sends.year.in_(years))
+               .order_by(Grade.grade_id.desc()).first())
+
+    if highest:
+        send, grade = highest
+        return jsonify({"grade_id": grade.grade_id})
+    return jsonify({"grade_id": None})
+
+@app.route("/api/pyramid")
+@login_required
+def api_pyramid():
+    climbing_style = request.args.get('climbing_style', 'route')
+    grade_id = request.args.get('grade', '30')
+    pyramid_levels = request.args.get('pyramid_levels', '8')
+    styles = request.args.getlist('style')
+    angles = request.args.getlist('angle')
+    years = request.args.getlist('year')
+
+    view_user_id = current_user.id
+    if current_user.email in (ADMIN_EMAIL, GUEST_EMAIL):
+        selected_id = request.args.get('view_user_id')
+        if selected_id:
+            view_user_id = int(selected_id)
+        elif current_user.email == GUEST_EMAIL:
+            first_user = User.query.filter(User.email != GUEST_EMAIL).first()
+            if first_user:
+                view_user_id = first_user.id
+
+    grade = Grade.query.filter_by(grade_id=grade_id).first()
+    if not grade:
+        return jsonify([])
+
+    grade_list = [g.grade for g in Grade.query.filter_by(grade_style=climbing_style)
+                  .where(Grade.grade_id <= grade.grade_id).all()]
+    slice_grade_list = grade_list[-int(pyramid_levels):]
+
+    if not styles:
+        styles = ["Compression","Pockets","Crimps","Jugs","Incuts","Jam","Pinch","Slopers","Tufa"]
+    if not angles:
+        angles = ["Slab","Vertical","Overhang","Roof"]
+    if not years:
+        years = [str(datetime.now().year)]
+
+    result = db.session.execute(
+        db.select(Sends).where(Sends.grade.in_(slice_grade_list))
+        .where(Sends.user_id == view_user_id)
+        .where(Sends.style.in_(styles))
+        .where(Sends.angle.in_(angles))
+        .where(Sends.year.in_(years))
+        .order_by("date")
+    )
+    selected_sends = result.scalars().all()
+
+    outer_list = []
+    for grade in grade_list[::-1]:
+        inner_list = []
+        seen_routes = set()
+        for send in selected_sends:
+            if send.grade == grade and send.route_name not in seen_routes:
+                seen_routes.add(send.route_name)
+                inner_list.append({"name": send.route_name, "date": send.date, "ascent": send.ascent_type})
+        if inner_list:
+            outer_list.append({"grade": grade, "climbs": inner_list})
+
+    return jsonify(outer_list)
 
 @app.route("/grades/<style>")
 @login_required
@@ -338,8 +453,6 @@ def logout():
     return redirect(url_for('index'))
 
 
-from waitress import serve
-
 if __name__ == "__main__":
-    serve(app, host="0.0.0.0", port=5000)
+    app.run(debug=True, port=5000)
 

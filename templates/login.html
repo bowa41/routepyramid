@@ -23,6 +23,8 @@
       Let me in.
     </button>
   </form>
+  <a href="{{ url_for('guest_login') }}" class="btn btn-secondary btn-block btn-large"
+  >Continue as Guest</a>
 
   {% with messages = get_flashed_messages() %}
   {% if messages %}
