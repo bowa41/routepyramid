@@ -31,22 +31,42 @@
  <div  class="content">
      <div id='filters'>
          {% if is_admin or is_guest %}
-         <select id="user-switcher" onchange="switchUser(this.value)">
-             {% for u in all_users %}
-             <option value="{{ u.id }}" {% if u.id == view_user_id %}selected{% endif %}>{{ u.name }}</option>
-             {% endfor %}
-         </select>'s Pyramid
+         <span id="user-switcher-wrapper">
+           <select id="user-switcher" onchange="switchUser(this.value)">
+               {% for u in all_users %}
+               <option value="{{ u.id }}" {% if u.id == view_user_id %}selected{% endif %}>{{ u.name }}</option>
+               {% endfor %}
+           </select>
+         </span>'s Pyramid
          {% else %}
          {{current_user}}'s Pyramid
          {% endif %}
          <form method="POST" id="filter-form">
-{% for items in form %}
-             {{items}}
-             {%endfor%}
+            {{ form.hidden_tag() }}
+            <label>Climbing Style</label>
+            {{ form.climbing_style }}
+            <label>Pyramid Levels</label>
+            {{ form.pyramid_levels }}
+            <label>Hold Type</label>
+            {{ form.style }}
+            <label>Angle</label>
+            {{ form.angle }}
+            <label>Year</label>
+            {{ form.year }}
+            <div id="year-pills">
+              {% for value, label in form.year.choices %}
+              <button type="button" class="year-pill y{{ value }}" data-year="{{ value }}"
+                data-active="{{ 'true' if value in form.year.data else 'false' }}"
+                onclick="toggleYear('{{ value }}')">{{ label }}</button>
+              {% endfor %}
+            </div>
     <input type="hidden" name="grade" id="grade" value="{{ grade_id }}">
     <input type="hidden" name="view_user_id" id="view_user_id" value="{{ view_user_id }}">
     <input type="submit" value="Search for Sends" id="Search" style="display:none">
-    <button type="button" id="show-all-btn" onclick="showAll()">Show All</button>
+    <div id="filter-btns">
+        <button type="button" id="show-all-btn" onclick="showAll()">Show All</button>
+        <button type="button" id="show-current-btn" onclick="showCurrentYear()">Current Year</button>
+    </div>
     </form>
      <script>
         // --- Modal ---
@@ -189,11 +209,35 @@
             if (el) el.addEventListener('change', updatePyramid);
         });
 
+        async function toggleYear(year) {
+            const pill = document.querySelector(`.year-pill[data-year="${year}"]`);
+            const option = document.querySelector(`#year option[value="${year}"]`);
+            const isActive = pill.dataset.active === 'true';
+            pill.dataset.active = isActive ? 'false' : 'true';
+            option.selected = !isActive;
+            await updateHighestGrade();
+            updatePyramid();
+        }
+
+        async function showCurrentYear() {
+            const currentYear = new Date().getFullYear().toString();
+            Array.from(document.querySelector('#year').options).forEach(opt => {
+                opt.selected = opt.value === currentYear;
+            });
+            document.querySelectorAll('.year-pill').forEach(p => {
+                p.dataset.active = p.dataset.year === currentYear ? 'true' : 'false';
+            });
+            await updateHighestGrade();
+            updatePyramid();
+        }
+
         async function showAll() {
-            ['style', 'angle', 'year'].forEach(id => {
+            ['style', 'angle'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) Array.from(el.options).forEach(opt => opt.selected = true);
             });
+            Array.from(document.querySelector('#year').options).forEach(opt => opt.selected = true);
+            document.querySelectorAll('.year-pill').forEach(p => p.dataset.active = 'true');
             await updateHighestGrade();
             updatePyramid();
         }

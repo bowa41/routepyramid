@@ -284,11 +284,13 @@ def home():
 
         return render_template('home.html', layers=output, form=form, add_form=add_form,
                                current_user=view_user_name, is_admin=is_admin, is_guest=is_guest,
-                               all_users=all_users, view_user_id=view_user_id, grade_id=grade_id)
+                               all_users=all_users, view_user_id=view_user_id, grade_id=grade_id,
+                               now=datetime.now())
 
     return render_template("home.html", form=form, add_form=add_form, highest_boulder=highest_boulder_grade,
                            current_user=view_user_name, is_admin=is_admin, is_guest=is_guest,
-                           all_users=all_users, view_user_id=view_user_id, grade_id=grade_id)
+                           all_users=all_users, view_user_id=view_user_id, grade_id=grade_id,
+                           now=datetime.now())
 
 @app.route("/api/highest-grade")
 @login_required
