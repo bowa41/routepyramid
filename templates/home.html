@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  <div id="myModal" class="modal">
+  {% if not is_guest %}<div id="myModal" class="modal">
         <div class="modal-content">
             <div class="flex-btn">
                 <h2>Add a Send</h2>
@@ -25,72 +25,183 @@
     <input type="submit" value="Submit" id="Add">
                  </form>
         </div>
-    </div>
-   <button class="custom-fab" id="openModalBtn">+</button>
+    </div>{% endif %}
+   {% if not is_guest %}<button class="custom-fab" id="openModalBtn">+</button>{% endif %}
+   <a href="{{ url_for('logout') }}" class="custom-fab logout-fab">↩</a>
  <div  class="content">
      <div id='filters'>
+         {% if is_admin or is_guest %}
+         <select id="user-switcher" onchange="switchUser(this.value)">
+             {% for u in all_users %}
+             <option value="{{ u.id }}" {% if u.id == view_user_id %}selected{% endif %}>{{ u.name }}</option>
+             {% endfor %}
+         </select>'s Pyramid
+         {% else %}
          {{current_user}}'s Pyramid
-         <form method="POST">
+         {% endif %}
+         <form method="POST" id="filter-form">
 {% for items in form %}
              {{items}}
              {%endfor%}
-    <input type="submit" value="Search for Sends" id="Search">
+    <input type="hidden" name="grade" id="grade" value="{{ grade_id }}">
+    <input type="hidden" name="view_user_id" id="view_user_id" value="{{ view_user_id }}">
+    <input type="submit" value="Search for Sends" id="Search" style="display:none">
+    <button type="button" id="show-all-btn" onclick="showAll()">Show All</button>
     </form>
      <script>
-        let style_select = document.getElementById('climbing_style');
-        let grade_select = document.getElementById('grade');
+        // --- Modal ---
+        {% if not is_guest %}
+        var modal = document.getElementById("myModal");
+        var btn = document.getElementById("openModalBtn");
+        var span = document.getElementsByClassName("close")[0];
+        btn.onclick = function() { modal.style.display = "block"; }
+        span.onclick = function() { modal.style.display = "none"; }
+        window.onclick = function(event) { if (event.target == modal) modal.style.display = "none"; }
+        {% endif %}
 
-        style_select.onchange = function() {
-    let style = style_select.value;
+        // --- Helpers ---
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
 
-    fetch('/grades/' + style)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data.grades) {
-                throw new Error('Data structure is incorrect');
-            }
+        function getFilterParams() {
+            const form = document.getElementById('filter-form');
+            const data = new URLSearchParams();
+            ['climbing_style', 'grade', 'pyramid_levels'].forEach(name => {
+                const el = form.querySelector(`[name="${name}"]`);
+                if (el) data.append(name, el.value);
+            });
+            ['style', 'angle', 'year'].forEach(name => {
+                const el = form.querySelector(`[name="${name}"]`);
+                if (el) Array.from(el.selectedOptions).forEach(opt => data.append(name, opt.value));
+            });
+            const viewUserId = document.getElementById('view_user_id');
+            if (viewUserId) data.append('view_user_id', viewUserId.value);
+            return data;
+        }
 
-            let optionHTML = '';
-            for (let grade of data.grades) {
-                optionHTML += `<option value="${grade.id}">${grade.grade}</option>`;
+        function renderPyramid(layers) {
+            return layers.map(layer => `
+                <div class="layer">
+                    <div class="blocks">
+                        <div class="block blocks-no-border">${escHtml(layer.grade)}</div>
+                        <div class="all-blocks">
+                            ${layer.climbs.map(climb => `
+                                <div class="block ${escHtml(climb.ascent)} y${escHtml(climb.date.slice(0,4))}"
+                                     data-key="${escHtml(climb.name + '|' + layer.grade)}">
+                                    <strong>${escHtml(climb.name)}</strong>
+                                    <span class="block-date">${escHtml(climb.date)}</span>
+                                    <div class="icon-container">
+                                        <i class="fas ${climb.ascent === 'Redpoint' ? 'fa-circle' : 'fa-bolt'}"></i>
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function updatePyramid() {
+            const pyramid = document.getElementById('pyramid');
+
+            // 1. Record current positions
+            const oldRects = {};
+            pyramid.querySelectorAll('.block[data-key]').forEach(el => {
+                oldRects[el.dataset.key] = el.getBoundingClientRect();
+            });
+
+            // 2. Fetch new data
+            const params = getFilterParams();
+            const response = await fetch('/api/pyramid?' + params.toString());
+            const layers = await response.json();
+
+            // 3. Keys in new result
+            const newKeys = new Set();
+            layers.forEach(layer => layer.climbs.forEach(climb => {
+                newKeys.add(climb.name + '|' + layer.grade);
+            }));
+
+            // 4. Fade out blocks leaving
+            const leaving = [];
+            pyramid.querySelectorAll('.block[data-key]').forEach(el => {
+                if (!newKeys.has(el.dataset.key)) {
+                    leaving.push(el);
+                    el.style.transition = 'opacity 0.15s ease';
+                    el.style.opacity = '0';
+                }
+            });
+
+            // 5. After fade-out, rebuild and animate
+            setTimeout(() => {
+                pyramid.innerHTML = renderPyramid(layers);
+
+                pyramid.querySelectorAll('.block[data-key]').forEach(el => {
+                    const key = el.dataset.key;
+                    if (oldRects[key]) {
+                        // Existing block — FLIP to new position
+                        const newRect = el.getBoundingClientRect();
+                        const dx = oldRects[key].left - newRect.left;
+                        const dy = oldRects[key].top - newRect.top;
+                        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+                            el.style.transform = `translate(${dx}px, ${dy}px)`;
+                            el.style.transition = 'none';
+                            requestAnimationFrame(() => requestAnimationFrame(() => {
+                                el.style.transition = 'transform 0.25s ease';
+                                el.style.transform = '';
+                            }));
+                        }
+                    } else {
+                        // New block — fade in
+                        el.style.opacity = '0';
+                        el.style.transition = 'none';
+                        requestAnimationFrame(() => requestAnimationFrame(() => {
+                            el.style.transition = 'opacity 0.25s ease';
+                            el.style.opacity = '1';
+                        }));
+                    }
+                });
+            }, leaving.length > 0 ? 150 : 0);
+        }
+
+        // --- Filter listeners ---
+        const style_select = document.getElementById('climbing_style');
+
+        async function updateHighestGrade() {
+            const params = getFilterParams();
+            const r = await fetch('/api/highest-grade?' + params.toString());
+            const data = await r.json();
+            if (data.grade_id !== null) {
+                document.getElementById('grade').value = data.grade_id;
             }
-            grade_select.innerHTML = optionHTML;
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
+        }
+
+        style_select.onchange = async function() {
+            await updateHighestGrade();
+            updatePyramid();
+        };
+
+        document.getElementById('year').addEventListener('change', async function() {
+            await updateHighestGrade();
+            updatePyramid();
         });
-};
-         // script.js
-// Get the modal
-var modal = document.getElementById("myModal");
 
-// Get the button that opens the modal
-var btn = document.getElementById("openModalBtn");
+        ['pyramid_levels', 'style', 'angle'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', updatePyramid);
+        });
 
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
+        async function showAll() {
+            ['style', 'angle', 'year'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) Array.from(el.options).forEach(opt => opt.selected = true);
+            });
+            await updateHighestGrade();
+            updatePyramid();
+        }
 
-// When the user clicks the button, open the modal
-btn.onclick = function() {
-    modal.style.display = "block";
-}
-
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-    modal.style.display = "none";
-}
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
+        function switchUser(userId) {
+            document.getElementById('view_user_id').value = userId;
+            updatePyramid();
+        }
      </script>
      </div>
      <div id='pyramid'>
@@ -102,7 +213,7 @@ window.onclick = function(event) {
     <div class="block blocks-no-border">{{layer["grade"]}}</div>
      <div class="all-blocks">
     {% for climb in layer["climbs"] %}
-    <div class="block {{climb.ascent}} y{{climb.date[:4]}}">
+    <div class="block {{climb.ascent}} y{{climb.date[:4]}}" data-key="{{ (climb.name ~ '|' ~ layer['grade']) | e }}">
          <strong>{{ climb.name }}</strong>
         <span class="block-date">{{ climb.date }}</span>
           <div class='icon-container'>
