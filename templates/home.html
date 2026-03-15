@@ -31,6 +31,7 @@
    <a href="{{ url_for('logout') }}" class="custom-fab logout-fab">↩</a>
  <div  class="content">
      <div id='filters'>
+         <div class="pyramid-title">
          {% if is_admin or is_guest %}
          <span id="user-switcher-wrapper">
            <select id="user-switcher" onchange="switchUser(this.value)">
@@ -42,6 +43,7 @@
          {% else %}
          {{current_user}}'s Pyramid
          {% endif %}
+         </div>
          <form method="POST" id="filter-form">
             {{ form.hidden_tag() }}
             <label>Climbing Style</label>
