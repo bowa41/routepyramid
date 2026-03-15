@@ -31,8 +31,26 @@ form {
 
 .content {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 220px 1fr;
   height: 100vh;
+  transition: grid-template-columns 0.3s ease;
+}
+
+.content.filters-collapsed {
+  grid-template-columns: 220px 1fr;
+}
+
+/* ─── Mobile Filter Accordion ──────────────────────────────── */
+#mobile-filter-accordion {
+  display: none;
+}
+
+#accordion-body {
+  display: contents;
+}
+
+#accordion-caret {
+  transition: transform 0.25s ease;
 }
 
 h1.centered {
@@ -648,4 +666,133 @@ select#angle {
 .box p, .box ul {
   color: #6e6e73;
   font-size: 14px;
+}
+
+#filter-body {
+  overflow: hidden;
+}
+
+/* ─── Mobile ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  .content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  #filters {
+    position: static;
+    height: auto;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 16px 16px 0;
+  }
+
+  #filter-body {
+    max-height: 1000px;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+    opacity: 1;
+    padding-bottom: 16px;
+  }
+
+  .filters-collapsed #filter-body {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    padding-bottom: 0;
+  }
+
+  #mobile-filter-accordion {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    cursor: pointer;
+    color: #1d1d1f;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 12px;
+    box-sizing: border-box;
+  }
+
+  #mobile-filter-accordion #accordion-caret {
+    position: static;
+    flex-shrink: 0;
+  }
+
+  #accordion-body {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+    opacity: 0;
+  }
+
+  #accordion-body.accordion-open {
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .pyramid-title {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  #pyramid {
+    width: 100%;
+    margin: 20px auto;
+    padding: 0 8px;
+  }
+
+  .block {
+    height: 70px;
+    width: 70px;
+    margin: 3px;
+  }
+
+  .custom-fab {
+    width: 48px;
+    height: 48px;
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .logout-icon {
+    top: 14px;
+    right: 14px;
+  }
+
+  .modal-content {
+    margin: 4% auto;
+    width: 95%;
+    padding: 22px 18px;
+    border-radius: 14px;
+  }
+
+  .box form,
+  .box .btn,
+  .box a {
+    width: 90vw;
+    max-width: 320px;
+  }
+
+  #filters select[multiple] {
+    min-height: 70px;
+  }
+
+  .option-pills,
+  #year-pills {
+    gap: 4px;
+  }
 }

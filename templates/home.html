@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Route Pyramid</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     {{ fontawesome_html() }}
@@ -35,6 +36,7 @@
    </a>
  <div  class="content">
      <div id='filters'>
+         <div id="filter-body">
          {% if is_admin or is_guest %}
          <span id="user-switcher-wrapper">
            <select id="user-switcher" onchange="switchUser(this.value)">
@@ -48,6 +50,13 @@
          {% endif %}
          <form method="POST" id="filter-form">
             {{ form.hidden_tag() }}
+            <button type="button" id="mobile-filter-accordion" onclick="toggleFilterAccordion()">
+              <span id="accordion-label">Show Filters</span>
+              <svg id="accordion-caret" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="18 15 12 9 6 15"></polyline>
+              </svg>
+            </button>
+            <div id="accordion-body">
             <label>Climbing Style</label>
             {{ form.climbing_style }}
             <div class="style-toggle" id="style-toggle">
@@ -84,15 +93,16 @@
                 onclick="toggleYear('{{ value }}')">{{ label }}</button>
               {% endfor %}
             </div>
-    <input type="hidden" name="grade" id="grade" value="{{ grade_id }}">
-    <input type="hidden" name="view_user_id" id="view_user_id" value="{{ view_user_id }}">
-    <input type="submit" value="Search for Sends" id="Search" style="display:none">
     <label>Search Routes</label>
     <div id="route-search-container">
         <input type="text" id="route-search" placeholder="Type to search...">
         <div id="route-search-dropdown"></div>
         <div id="route-search-tags"></div>
     </div>
+    </div><!-- end accordion-body -->
+    <input type="hidden" name="grade" id="grade" value="{{ grade_id }}">
+    <input type="hidden" name="view_user_id" id="view_user_id" value="{{ view_user_id }}">
+    <input type="submit" value="Search for Sends" id="Search" style="display:none">
     </form>
      <script>
         // --- Modal ---
@@ -379,13 +389,23 @@
             }
         });
 
+        function toggleFilterAccordion() {
+            const body = document.getElementById('accordion-body');
+            const caret = document.getElementById('accordion-caret');
+            const label = document.getElementById('accordion-label');
+            const open = body.classList.toggle('accordion-open');
+            caret.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+            label.textContent = open ? 'Hide Filters' : 'Show Filters';
+        }
+
         async function switchUser(userId) {
             document.querySelectorAll('[name="view_user_id"]').forEach(el => el.value = userId);
             await updateHighestGrade();
             updatePyramid();
         }
      </script>
-     </div>
+     </div><!-- end filter-body -->
+     </div><!-- end filters -->
      <div id='pyramid'>
 
 {% for layer in layers %}
@@ -413,10 +433,6 @@
          {% endfor %}
 </div>
 
-
-
-
-         </div>
-     </div>
+     </div><!-- end content -->
 </body>
 </html>
