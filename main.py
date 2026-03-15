@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, DateField
-from flask_font_awesome import FontAwesome
+from flask_fontawesome import FontAwesome
 from wtforms.fields.choices import SelectMultipleField
 from wtforms.validators import DataRequired
 from datetime import datetime, date
@@ -186,8 +186,10 @@ def read_data(form):
 
     for grade in grade_list[::-1]:
         inner_list = []
+        seen_routes = set()
         for send in selected_sends:
-            if send.grade == grade:
+            if send.grade == grade and send.route_name not in seen_routes:
+                seen_routes.add(send.route_name)
                 inner_list.append({"name": send.route_name, "date": send.date, "ascent": send.ascent_type})
         if len(inner_list) > 0:
             outer_list.append({"grade": grade, "climbs": inner_list})
@@ -336,5 +338,8 @@ def logout():
     return redirect(url_for('index'))
 
 
-if __name__ == '__main__':
-    app.run()
+from waitress import serve
+
+if __name__ == "__main__":
+    serve(app, host="0.0.0.0", port=5000)
+

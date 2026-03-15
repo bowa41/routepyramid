@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Route Pyramid</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    {{ font_awesome.load_js() }}
+    {{ fontawesome_html() }}
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
@@ -107,9 +107,9 @@ window.onclick = function(event) {
         <span class="block-date">{{ climb.date }}</span>
           <div class='icon-container'>
             {% if climb.ascent == "Redpoint" %}
-                {{font_awesome.render_icon("fas fa-circle")}}
+                <i class="fas fa-circle"></i>
             {% else %}
-                {{font_awesome.render_icon("fas fa-bolt")}}
+                <i class="fas fa-bolt"></i>
             {% endif %}
               </div>
              </div>
