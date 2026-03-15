@@ -14,9 +14,19 @@ body {
 
 form {
     margin-top: 12px;
-    gap: 12px;
+    gap: 4px;
     display: flex;
     flex-direction: column;
+}
+
+#filters label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+    margin-top: 8px;
+    margin-bottom: 2px;
 }
 
 .content {
@@ -130,6 +140,84 @@ svg {
 
 .y2024 {
   background: #ffebef;
+}
+
+.y2025 {
+  background: #fff3cc;
+}
+
+.y2026 {
+  background: #d4f5e2;
+}
+
+select#year {
+  display: none;
+}
+
+#user-switcher-wrapper {
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 2px solid #333;
+  gap: 4px;
+  padding-bottom: 2px;
+}
+
+#user-switcher {
+  border: none;
+  background: transparent;
+  font-family: 'Poppins';
+  font-size: inherit;
+  font-weight: inherit;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+}
+
+#user-switcher-wrapper::after {
+  content: '▾';
+  font-size: 14px;
+  pointer-events: none;
+}
+
+#year-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+#filter-btns {
+  display: flex;
+  gap: 6px;
+}
+
+#filter-btns button {
+  flex: 1;
+  font-family: 'Poppins';
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.year-pill {
+  border-radius: 20px;
+  padding: 4px 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-family: 'Poppins';
+  font-size: 12px;
+  font-weight: 600;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+.year-pill[data-active="true"] {
+  border-color: #333;
+  opacity: 1;
+}
+
+.year-pill[data-active="false"] {
+  opacity: 0.3;
 }
 
 .icon-container {
